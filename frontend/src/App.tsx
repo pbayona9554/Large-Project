@@ -1,19 +1,7 @@
 //import React from 'react';
-import { BrowserRouter as Router, Route, Redirect, Switch } from 'react-router-dom';
-import './App.css';
+import StudentOrgsPage from "./pages/StudentOrgsPage/StudentOrgsPage.tsx";
 
-
-
-function App() {
-  return (
-    <Router >
-      <Switch>
-        
-      </Switch>  
-    </Router>
-  );
+export default function App() {
+  return <StudentOrgsPage />;
 }
-
-export default App;
-
 
