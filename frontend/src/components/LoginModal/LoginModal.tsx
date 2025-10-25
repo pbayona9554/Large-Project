@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Modal from "../Modal/Modal";
 import styles from "./LoginModal.module.css";
+import keyhole from "../../assets/keyhole.svg";
 
 type LoginModalProps = {
   open: boolean;
@@ -8,63 +9,201 @@ type LoginModalProps = {
 };
 
 export default function LoginModal({ open, onClose }: LoginModalProps) {
+  const [isSignup, setIsSignup] = useState(false);
+  const [animating, setAnimating] = useState(false);
+
+  // login fields
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
 
-  function onSubmit(e: React.FormEvent) {
+  // signup fields
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPwd, setSignupPwd] = useState("");
+
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // plug in your auth call here
-    alert(`Signed in as ${email}`);
-    onClose();
+
+    if (isSignup) {
+      // Create account logic
+      setTimeout(() => {
+        // After creating account, go back to Login mode
+        setIsSignup(false);
+        setFirstName("");
+        setLastName("");
+        setSignupEmail("");
+        setSignupPwd("");
+      }, 500);
+    } else {
+      // Trigger animation for sign in
+      setAnimating(true);
+      setTimeout(() => {
+        setAnimating(false);
+        onClose(); // close modal after animation
+      }, 1000);
+    }
+  }
+
+  function toggleMode() {
+    setIsSignup(!isSignup);
+    setEmail("");
+    setPwd("");
+    setFirstName("");
+    setLastName("");
+    setSignupEmail("");
+    setSignupPwd("");
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} labelledBy="loginTitle">
+    <Modal isOpen={open} onClose={onClose} labelledBy="authTitle">
       <div className={styles.card}>
         <div className={styles.inner}>
-          <h1 id="loginTitle" className={styles.title}>Login</h1>
+          <h1 id="authTitle" className={styles.title}>
+            {isSignup ? "Sign Up" : "Login"}
+          </h1>
 
-          <form onSubmit={onSubmit}>
-            <label className={styles.srOnly} htmlFor="email">UCF Email</label>
-            <div className={styles.field}>
-              <input
-                id="email"
-                className={styles.input}
-                type="email"
-                placeholder="UCF Email"
-                autoComplete="username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+          <form onSubmit={handleSubmit}>
+            {isSignup ? (
+              <>
+                <div className={styles.fieldRow}>
+                  <div className={styles.field}>
+                    <label className={styles.srOnly} htmlFor="firstName">
+                      First Name
+                    </label>
+                    <input
+                      id="firstName"
+                      className={styles.input}
+                      type="text"
+                      placeholder="First Name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                    />
+                  </div>
 
-            <label className={styles.srOnly} htmlFor="password">Password</label>
-            <div className={styles.field}>
-              <input
-                id="password"
-                className={styles.input}
-                type="password"
-                placeholder="Password"
-                autoComplete="current-password"
-                value={pwd}
-                onChange={(e) => setPwd(e.target.value)}
-                required
-              />
-            </div>
+                  <div className={styles.field}>
+                    <label className={styles.srOnly} htmlFor="lastName">
+                      Last Name
+                    </label>
+                    <input
+                      id="lastName"
+                      className={styles.input}
+                      type="text"
+                      placeholder="Last Name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.srOnly} htmlFor="signupEmail">
+                    UCF Email
+                  </label>
+                  <input
+                    id="signupEmail"
+                    className={styles.input}
+                    type="email"
+                    placeholder="UCF Email"
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.srOnly} htmlFor="signupPwd">
+                    Password
+                  </label>
+                  <input
+                    id="signupPwd"
+                    className={styles.input}
+                    type="password"
+                    placeholder="Password"
+                    autoComplete="new-password"
+                    value={signupPwd}
+                    onChange={(e) => setSignupPwd(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={styles.field}>
+                  <label className={styles.srOnly} htmlFor="email">
+                    UCF Email
+                  </label>
+                  <input
+                    id="email"
+                    className={styles.input}
+                    type="email"
+                    placeholder="UCF Email"
+                    autoComplete="username"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.srOnly} htmlFor="password">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    className={styles.input}
+                    type="password"
+                    placeholder="Password"
+                    autoComplete="current-password"
+                    value={pwd}
+                    onChange={(e) => setPwd(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            )}
 
             <div className={styles.actions}>
               <button className={styles.btn} type="submit">
-                <span>Sign In</span>
-                <svg className={styles.lock} viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" fill="none" strokeWidth="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" fill="none" strokeWidth="2"/>
-                </svg>
+                <span>{isSignup ? "Create Account" : "Sign In"}</span>
+                {!isSignup && (
+                  <img
+                    src={keyhole}
+                    alt=""
+                    className={`${styles.loginIcon} ${
+                      animating ? styles.zoomOut : ""
+                    }`}
+                  />
+                )}
               </button>
             </div>
 
             <p className={styles.meta}>
-              Don’t have an account? <a href="#">Sign Up</a>
+              {isSignup ? (
+                <>
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={toggleMode}
+                    className={styles.switchBtn}
+                  >
+                    Log In
+                  </button>
+                </>
+              ) : (
+                <>
+                  Don’t have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={toggleMode}
+                    className={styles.switchBtn}
+                  >
+                    Sign Up
+                  </button>
+                </>
+              )}
             </p>
           </form>
         </div>
