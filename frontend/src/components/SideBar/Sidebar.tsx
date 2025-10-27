@@ -15,6 +15,7 @@ type Item = {
 const DEFAULT_ITEMS: Item[] = [
   { label: "Home", href: "/", icon: <img src={homeIcon} alt="Home" /> },
   {
+    label: "My Dashboard",
     href: "/orgs",
     icon: <img src={profileIcon} alt="Dashboard" />,
   },
