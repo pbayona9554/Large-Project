@@ -1,7 +1,13 @@
-//import React from 'react';
-import StudentOrgsPage from "./pages/StudentOrgsPage/StudentOrgsPage.tsx";
+import Sidebar from "./components/SideBar/Sidebar";
+import StudentOrgsPage from "./pages/StudentOrgsPage/StudentOrgsPage";
 
 export default function App() {
-  return <StudentOrgsPage />;
+  return (
+    <>
+      <Sidebar />
+      <main style={{ marginLeft: "var(--sidebar-w)", minHeight: "100vh" }}>
+        <StudentOrgsPage />
+      </main>
+    </>
+  );
 }
-
