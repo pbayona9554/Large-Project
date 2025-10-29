@@ -1,5 +1,6 @@
 :root { --sidebar-w: 240px; }
 
+/* container */
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
@@ -10,92 +11,118 @@
   grid-template-rows: auto 1fr;
   transition: width .2s ease;
   box-shadow: 2px 0 18px rgba(0,0,0,.12);
-
+  z-index: 20;
 }
 
 .collapsed { width: 72px; }
 
+/* header */
 .header {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 12px;
 }
 
-.brand { font-weight: 900;
-    padding-left: 20px;
-    }
-
-.toggle {
-  border: 0; background: #f7e29b; color: #111; cursor: pointer;
-  width: 34px; height: 34px; border-radius: 8px;
+.brand {
+  font-weight: 900;
+  padding-left: 20px;
 }
 
-.nav { padding: 8px; }
+/* toggle button */
+.toggle {
+  border: 0;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.chev { display: inline-block; padding-left: 10px;}
+
+/* nav wrapper */
+.navContainer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12px 12px 20px;
+  height: 100%;
+}
+
+.nav {
+  width: 90%;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+  height: auto;
+}
+
+/* collapsed tweaks */
+.sidebar.collapsed .nav {
+  width: 60%;
+  padding: 8px 6px;
+  align-items: center;
+}
+
+.sidebar.collapsed .navContainer {
+  padding: 0 3px 3px;
+}
+
+/* shared item style for a and button */
 .link {
-    display: grid;
-    grid-template-columns: 28px 1fr;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    text-decoration: none;
-    color: inherit;
-    background: transparent;
-    font-weight: 600;
-    transition: background 0.15s ease, transform 0.1s ease;
-    margin-bottom: 4px;
-  }
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  background: transparent;
+  font-weight: 600;
+  transition: background 0.15s ease, transform 0.1s ease;
+  margin-bottom: 12px;
+
+  border: 0;            /* for button */
+  cursor: pointer;      /* for button */
+  text-align: left;     /* for button */
+  appearance: none;
+  -webkit-appearance: none;
+}
 
 .link:hover { background: rgba(255,255,255,.5); }
 
-.active {
-    background: rgba(255, 255, 255, 0.65);
-  }
+.active { background: rgba(255, 255, 255, 0.65); }
+
 .icon { display: grid; place-items: center; }
+
+.icon img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
 .label { white-space: nowrap; }
 
+/* collapsed item layout */
 .collapsed .link { grid-template-columns: 1fr; justify-items: center; }
 .collapsed .label { display: none; }
 
-.chev { display: inline-block; }
-
-.icon img {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
-  }
-  .navContainer {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 12px 12px 20px; 
-    height: 100%;
-  }
-  
-  
-  .nav {
-    width: 90%;
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 18px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; /* 👈 keeps content at the top of the box */
-    gap: 8px;
-    height: auto; /* 👈 adjusts to fit the menu items only */
-  }
-  
-  
-  .sidebar.collapsed .nav {
-    width: 60%;
-    padding: 8px 6px;
-    align-items: center;
-  }
-
-  /* When collapsed, center the menu vertically */
-.sidebar.collapsed .navContainer {
-    padding: 0 3px 3px;
-  }
-  
-  
+/* focus styles for keyboard users */
+.link:focus-visible,
+.toggle:focus-visible {
+  outline: 2px solid rgba(0,0,0,.6);
+  outline-offset: 2px;
+}
