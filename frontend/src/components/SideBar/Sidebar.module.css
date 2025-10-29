@@ -10,7 +10,7 @@
   grid-template-rows: auto 1fr;
   transition: width .2s ease;
   box-shadow: 2px 0 18px rgba(0,0,0,.12);
-  z-index: 20;
+
 }
 
 .collapsed { width: 72px; }
