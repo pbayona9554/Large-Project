@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 
+
 const { connectDB } = require("./src/config/db");
 const JWT_SECRET=process.env.JWT_SECRET;
 

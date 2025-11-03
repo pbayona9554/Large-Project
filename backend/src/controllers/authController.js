@@ -1,8 +1,12 @@
 //All API code for authentification will be here
 
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+//const User = require("../models/User"); // Mongoose model or native db ref
+
 
 //Login api/endpoint with bcrypt hashing and JWT token session management
-app.post("/api/login", async (req, res) => {
+exports.SignIn = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await db.collection("users").findOne({ email : email});
@@ -10,13 +14,11 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ error: "Invalid email or password"});
     }
 
-    const bcrypt = require("bcryptjs");
     const isMatch = await bcrypt.compare(password, user.password); 
     if(!isMatch){
       return res.status(400).json({error : "Invalid username or password"});
     }
 
-    const jwt = require("jsonwebtoken");
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
@@ -39,10 +41,10 @@ app.post("/api/login", async (req, res) => {
     console.error("Login error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
-});
+};
 
 //Signup API endpoint with Hashing password and JWT token for session management
-app.post("/api/signup", async (req, res) => {
+exports.Login = async (req, res) => {
   const {name, email ,password, role} = req.body;
   
   try {
@@ -69,7 +71,6 @@ app.post("/api/signup", async (req, res) => {
     };
     const result = await db.collection("users").insertOne(newUser);
     
-    const jwt = require("jsonwebtoken");
     const token = jwt.sign(
       {id: result.insertedId, email, role : newUser.role},
       process.env.JWT_SECRET,
@@ -92,3 +93,28 @@ app.post("/api/signup", async (req, res) => {
     res.status(500).json({error: "Internal server error"});
   }  
 });
+
+
+// GET /api/auth/me
+exports.getCurrentUser = async (req, res) => {
+  // Use token from middleware
+  // Return current user info
+};
+
+// POST /api/auth/forgot-password
+exports.forgotPassword = async (req, res) => {
+  // Generate reset token
+  // Send email (future)
+};
+
+// POST /api/auth/reset-password
+exports.resetPassword = async (req, res) => {
+  // Verify reset token
+  // Update password
+};
+
+// GET /api/auth/verify/:token
+exports.verifyEmail = async (req, res) => {
+  // Validate email verification token
+  // Update user's verification status 
+  };
