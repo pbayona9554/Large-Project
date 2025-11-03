@@ -20,8 +20,7 @@ export default function EventsPage() {
       <main className={styles.page}>
         <header className={styles.header}>
           <h1 className={styles.title}>
-            <span>Upcoming</span>
-            <span>Events</span>
+            <span>Upcoming Events</span>
           </h1>
 
           <div className={styles.searchRow}>

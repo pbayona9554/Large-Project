@@ -34,18 +34,14 @@
     display:flex;
     flex-direction:column;
   }
-
-  .statsRow{
+  
+  .searchBar {
     display: grid;
-    gap: 12px;
+    flex: 1;
+    min-width: 250px;
     align-items: center;
     width: 100%;
     box-sizing: border-box;
-  }
-
-  .searchBar {
-    flex: 1;
-    min-width: 250px;
     padding: 10px 14px;
     border-radius: 999px;
     border: 2px solid #ccc;
@@ -62,26 +58,6 @@
     border-color: var(--gold);
     box-shadow: 0 0 0 3px rgba(247, 197, 70, 0.25);
   }
-  
-  .actions{
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    align-items: center;
-  }
-  
-  .pillBtn{
-    appearance:none;
-    border:0;
-    border-radius:999px;
-    padding:10px 16px;
-    background:#ddd;
-    color:#111;
-    font-weight:800;
-    cursor:pointer;
-  }
-  
-  .pillBtn:hover{ filter:brightness(0.98); }
   
   .grid{
     width: 100%;

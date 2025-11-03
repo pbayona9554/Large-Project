@@ -3,7 +3,7 @@ import LoginModal from "../../components/LoginModal/LoginModal";
 import OrgCard from "../OrgCard/OrgCard";
 import styles from "./StudentOrgsPage.module.css";
 
-const MOCK_ORGS = Array.from({ length: 9 }, (_, i) => ({
+const MOCK_ORGS = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,
   name: "Organization Name",
   logo: "/ucf-knight-placeholder.png", // replace with your asset path
@@ -11,23 +11,24 @@ const MOCK_ORGS = Array.from({ length: 9 }, (_, i) => ({
 
 export default function StudentOrgsPage() {
   const [loginOpen, setLoginOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <>
       <main className={styles.page}>
         <header className={styles.header}>
           <h1 className={styles.title}>
-            <span>Student</span>
-            <span>Organizations</span>
+            <span>Student Organizations</span>
           </h1>
 
           <div className={styles.statsRow}>
-            <div className={styles.statBox}>
-              <span className={styles.statNumber}>300,000</span> Organizations
-            </div>
-            <div className={styles.statBox}>
-              <span className={styles.statNumber}>400,000,000</span> Events
-            </div>
+            <input
+              type="text"
+              placeholder="Search organizations..."
+              className={styles.searchBar}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
 
             <div className={styles.actions}>
               <button
@@ -51,6 +52,7 @@ export default function StudentOrgsPage() {
             <OrgCard key={org.id} name={org.name} logo={org.logo} />
           ))}
         </section>
+
       </main>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
