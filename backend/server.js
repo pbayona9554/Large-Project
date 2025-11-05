@@ -9,7 +9,7 @@ require("dotenv").config();
 const { connectDB } = require("./src/config/db");
 const JWT_SECRET=process.env.JWT_SECRET;
 
-
+const orgRoutes = require("./routes/orgs");
 
 const app = express();
 app.use(cors());
@@ -26,7 +26,7 @@ async function start() {
 
     //Define routes below
     //app.use("/api/auth", authRoutes);
-    //app.use("/api/orgs", orgRoutes);
+    app.use("/api/orgs", orgRoutes);
     //app.use("/api/events", eventRoutes);
   }
   catch{
