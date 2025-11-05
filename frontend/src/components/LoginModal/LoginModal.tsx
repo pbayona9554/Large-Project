@@ -8,6 +8,8 @@ type LoginModalProps = {
   onClose: () => void;
 };
 
+type Role = "member" | "officer";
+
 export default function LoginModal({ open, onClose }: LoginModalProps) {
   const [isSignup, setIsSignup] = useState(false);
   const [animating, setAnimating] = useState(false);
@@ -21,26 +23,29 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
   const [lastName, setLastName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPwd, setSignupPwd] = useState("");
+  const [role, setRole] = useState<Role>("member"); // NEW
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (isSignup) {
-      // Create account logic
+      // Create account logic. Example payload:
+      // const payload = { firstName, lastName, email: signupEmail, password: signupPwd, role };
+      // await api.createUser(payload);
+
       setTimeout(() => {
-        // After creating account, go back to Login mode
         setIsSignup(false);
         setFirstName("");
         setLastName("");
         setSignupEmail("");
         setSignupPwd("");
+        setRole("member");
       }, 500);
     } else {
-      // Trigger animation for sign in
       setAnimating(true);
       setTimeout(() => {
         setAnimating(false);
-        onClose(); // close modal after animation
+        onClose();
       }, 1000);
     }
   }
@@ -53,6 +58,7 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
     setLastName("");
     setSignupEmail("");
     setSignupPwd("");
+    setRole("member");
   }
 
   return (
@@ -127,6 +133,27 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
                     onChange={(e) => setSignupPwd(e.target.value)}
                     required
                   />
+                </div>
+
+                {/* NEW Role select */}
+                <div className={styles.field}>
+                  <label className={styles.srOnly} htmlFor="role">
+                    Role
+                  </label>
+                  <select
+                    id="role"
+                    className={`${styles.input} ${styles.select}`}
+                    value={role}
+                    onChange={(e) => setRole(e.target.value as Role)}
+                    required
+                    aria-label="Select role"
+                  >
+                    <option value="member">Member (Student)</option>
+                    <option value="officer">Officer (Administrator)</option>
+                  </select>
+                  <p className={styles.helpText}>
+                    Officers can manage org content. Members have regular access.
+                  </p>
                 </div>
               </>
             ) : (

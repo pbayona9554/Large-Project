@@ -141,6 +141,31 @@
   .switchBtn:hover {
     color: #333;
   }
+
+  /* Make select look like the input */
+.select {
+  appearance: none;
+  background-color: var(--surface, #fff);
+  background-image: none;
+  line-height: 1.25;
+}
+
+/* Optional: little caret via background svg if you want */
+.select {
+  background-image: url("data:image/svg+xml;utf8,<svg fill='none' stroke='%23666' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem 1rem;
+  padding-right: 2.25rem; /* room for caret */
+}
+
+/* Tighter helper text spacing */
+.helpText {
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--muted, #6b7280);
+}
+
   
   
   @media (max-width: 420px) {
