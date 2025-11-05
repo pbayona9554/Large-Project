@@ -1,16 +1,11 @@
-//This file defines the route for all related authentification APIs
-
 const express = require("express");
-const router = requires("router");
+const router = express.Router();
+const { SignIn, Login } = require("../controllers/authController");
 
-const {
-    Login,
-    SignUp
-} = require ("../controllers/authController");
+// Login
+router.post("/login", SignIn);
 
-
-route.get("/",Login);
-route.post("/", SignUp);
-
+// Register/Signup
+router.post("/register", Login);
 
 module.exports = router;

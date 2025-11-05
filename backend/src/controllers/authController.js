@@ -2,21 +2,21 @@
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-//const User = require("../models/User"); // Mongoose model or native db ref
 
-
-//Login api/endpoint with bcrypt hashing and JWT token session management
+// Login endpoint
 exports.SignIn = async (req, res) => {
+  const db = req.app.locals.db;
   const { email, password } = req.body;
+
   try {
-    const user = await db.collection("users").findOne({ email : email});
-    if (!email) {
-      return res.status(400).json({ error: "Invalid email or password"});
+    const user = await db.collection("users").findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password); 
-    if(!isMatch){
-      return res.status(400).json({error : "Invalid username or password"});
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     const token = jwt.sign(
@@ -43,39 +43,40 @@ exports.SignIn = async (req, res) => {
   }
 };
 
-//Signup API endpoint with Hashing password and JWT token for session management
+// Signup endpoint
 exports.Login = async (req, res) => {
-  const {name, email ,password, role} = req.body;
-  
+  const db = req.app.locals.db;
+  const { name, email, password, role } = req.body;
+
   try {
-    if(!name || !email || !password || !role) {
-      return res.status(400).json({error: "All fields are required"});
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ error: "All fields are required" });
     }
 
-    //Check if user exists
-    const existingUser = await db.collection("users").findOne({email: email});
-    if(existingUser){
-      return res.status(400).json({error: "User already exists"});
+    const existingUser = await db.collection("users").findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "User already exists" });
     }
 
-    //Hash password
-    const hashedPassword = await bcrypt.hash(password,10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = {
-      name: name,
-      email: email,
+      name,
+      email,
       password: hashedPassword,
       role: role || "member",
-      verification : false,
+      verification: false,
       clubsjoined: []
     };
+
     const result = await db.collection("users").insertOne(newUser);
-    
+
     const token = jwt.sign(
-      {id: result.insertedId, email, role : newUser.role},
+      { id: result.insertedId, email, role: newUser.role },
       process.env.JWT_SECRET,
-      {expiresIn: "1h"} 
+      { expiresIn: "1h" }
     );
+
     res.status(201).json({
       message: "Signup successful",
       token,
@@ -88,33 +89,8 @@ exports.Login = async (req, res) => {
         clubsjoined: newUser.clubsjoined
       }
     });
-  } catch(err){
+  } catch (err) {
     console.error("Signup error:", err);
-    res.status(500).json({error: "Internal server error"});
-  }  
-});
-
-
-// GET /api/auth/me
-exports.getCurrentUser = async (req, res) => {
-  // Use token from middleware
-  // Return current user info
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
-
-// POST /api/auth/forgot-password
-exports.forgotPassword = async (req, res) => {
-  // Generate reset token
-  // Send email (future)
-};
-
-// POST /api/auth/reset-password
-exports.resetPassword = async (req, res) => {
-  // Verify reset token
-  // Update password
-};
-
-// GET /api/auth/verify/:token
-exports.verifyEmail = async (req, res) => {
-  // Validate email verification token
-  // Update user's verification status 
-  };

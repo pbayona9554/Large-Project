@@ -1,42 +1,57 @@
-// GET /api/orgs — Get all orgs
-export const getOrgs = async (req, res) => {
+require("dotenv").config();
+
+// GET /api/orgs
+exports.getOrgs = async (req, res) => {
+  const db = req.app.locals.db;
   try {
-    const orgs = await Org.find();
-    res.json(orgs);
+    const orgs = await db.collection("Orgs").find().toArray();
+    res.status(200).json({ orgs });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("getOrgs error:", err);
+    res.status(500).json({ error: "Failed to fetch organizations" });
   }
 };
 
-// GET /api/orgs/:id — Get single org
-export const getOrg = async (req, res) => {
+// GET /api/orgs/:id
+exports.getOrg = async (req, res) => {
+  const db = req.app.locals.db;
+  const { id } = req.params;
   try {
-    const org = await Org.findById(req.params.id);
-    if (!org) return res.status(404).json({ message: "Organization not found" });
-    res.json(org);
+    const org = await db.collection("Orgs").findOne({ _id: new require("mongodb").ObjectId(id) });
+    if (!org) return res.status(404).json({ error: "Organization not found" });
+    res.status(200).json({ org });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("getOrg error:", err);
+    res.status(500).json({ error: "Failed to fetch organization" });
   }
 };
 
-// POST /api/orgs — Create new org
-export const createOrg = async (req, res) => {
+// POST /api/orgs
+exports.createOrg = async (req, res) => {
+  const db = req.app.locals.db;
   try {
-    const org = new Org(req.body);
-    await org.save();
-    res.status(201).json(org);
+    const newOrg = req.body;
+    const result = await db.collection("Orgs").insertOne(newOrg);
+    res.status(201).json({ message: "Organization created", orgId: result.insertedId });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    console.error("createOrg error:", err);
+    res.status(500).json({ error: "Failed to create organization" });
   }
 };
 
-// PATCH /api/orgs/:id — Update org
-export const updateOrg = async (req, res) => {
+// PATCH /api/orgs/:id
+exports.updateOrg = async (req, res) => {
+  const db = req.app.locals.db;
+  const { id } = req.params;
   try {
-    const org = await Org.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!org) return res.status(404).json({ message: "Organization not found" });
-    res.json(org);
+    const result = await db.collection("Orgs").updateOne(
+      { _id: new require("mongodb").ObjectId(id) },
+      { $set: req.body }
+    );
+    if (result.matchedCount === 0) return res.status(404).json({ error: "Organization not found" });
+    res.status(200).json({ message: "Organization updated" });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    console.error("updateOrg error:", err);
+    res.status(500).json({ error: "Failed to update organization" });
   }
 };
