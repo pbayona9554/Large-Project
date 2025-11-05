@@ -1,5 +1,3 @@
-//All API code for authentification will be here
-
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -34,8 +32,8 @@ exports.SignIn = async (req, res) => {
         email: user.email,
         role: user.role,
         verification: user.verification,
-        clubsjoined: user.clubsjoined
-      }
+        clubsjoined: user.clubsjoined,
+      },
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -66,7 +64,7 @@ exports.Login = async (req, res) => {
       password: hashedPassword,
       role: role || "member",
       verification: false,
-      clubsjoined: []
+      clubsjoined: [],
     };
 
     const result = await db.collection("users").insertOne(newUser);
@@ -86,8 +84,8 @@ exports.Login = async (req, res) => {
         email,
         role: newUser.role,
         verification: newUser.verification,
-        clubsjoined: newUser.clubsjoined
-      }
+        clubsjoined: newUser.clubsjoined,
+      },
     });
   } catch (err) {
     console.error("Signup error:", err);
