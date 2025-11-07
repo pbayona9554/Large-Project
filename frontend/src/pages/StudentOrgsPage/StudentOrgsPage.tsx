@@ -14,6 +14,8 @@ export default function StudentOrgsPage() {
   const [loading, setLoading] = useState(true); // add loading state
   const [selectedOrg, setSelectedOrg] = useState(null);
   const navigate = useNavigate();
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("All");
 
   
   console.log("Logged in user:", user); //  logs inside React component
@@ -40,79 +42,108 @@ export default function StudentOrgsPage() {
     fetchOrgs();
   }, []);
 
-  const filteredOrgs = orgs.filter(
-    (org) => org.name && org.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOrgs = orgs.filter((org) => {
+    const matchesSearch =
+      org.name && org.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter =
+      activeFilter === "All" || org.category?.toLowerCase() === activeFilter.toLowerCase();
+    return matchesSearch && matchesFilter;
+  });
 
-return (
-  <>
-    <main className={styles.page}>
-      {!selectedOrg ? (
-        <>
-          <header className={styles.header}>
-            <h1 className={styles.title}>
-              <span>Student Organizations</span>
-            </h1>
+  return (
+    <>
+      <main className={styles.page}>
+        {!selectedOrg ? (
+          <>
+            <header className={styles.header}>
+              <h1 className={styles.title}>
+                <span>Student Organizations</span>
+              </h1>
 
-            <div className={styles.statsRow}>
-              <input
-                type="text"
-                placeholder="Search organizations..."
-                className={styles.searchBar}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <div className={styles.statsRow}>
+                <input
+                  type="text"
+                  placeholder="Search organizations..."
+                  className={styles.searchBar}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
 
-              <div className={styles.actions}>
-                {user?.role === "admin" && (
-                  <button
-                    className={styles.pillBtn}
-                    onClick={() => setLoginOpen(true)}
-                  >
-                    Add/Edit
-                  </button>
-                )}
+                <div className={styles.actions}>
+                  {user?.role === "admin" && (
+                    <button
+                      className={styles.pillBtn}
+                      onClick={() => setLoginOpen(true)}
+                    >
+                      Add/Edit
+                    </button>
+                  )}
 
-                <div className={styles.menuWrap}>
-                  <button className={styles.pillBtn} aria-haspopup="true">
-                    Filter ▾
-                  </button>
+                  <div className={styles.menuWrap}>
+                    <button
+                      className={styles.pillBtn}
+                      onClick={() => setFilterOpen(!filterOpen)}
+                    >
+                      Filter ▾
+                    </button>
+                    {filterOpen && (
+                      <div className={styles.dropdown}>
+                        {["All", "Academic", "Sports", "Cultural"].map(
+                          (filter) => (
+                            <button
+                              key={filter}
+                              className={`${styles.dropdownItem} ${
+                                activeFilter === filter ? styles.active : ""
+                              }`}
+                              onClick={() => {
+                                setActiveFilter(filter);
+                                setFilterOpen(false);
+                              }}
+                            >
+                              {filter}
+                            </button>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </header>
+            </header>
 
-          <section aria-label="Organizations" className={styles.grid}>
-            {loading ? (
-              <p>Loading organizations...</p>
-            ) : filteredOrgs.length > 0 ? (
-              filteredOrgs.map((org) => (
-                <OrgCard
-                  key={org._id || org.id}
-                  name={org.name}
-                  logo={org.logo}
-                  onClick={() => setSelectedOrg(org)}
-                />
-              ))
-            ) : (
-              <p>No organizations found.</p>
-            )}
-          </section>
-        </>
-      ) : (
-        <div className={styles.orgDetail}>
-          <button className={styles.backBtn} onClick={() => setSelectedOrg(null)}>
-            ← Back
-          </button>
-          <h2>{selectedOrg.name}</h2>
-          <img src={selectedOrg.logo} alt={`${selectedOrg.name} logo`} />
-          <p>ID: {selectedOrg._id}</p>
-          {/* You can add description, events, members, etc. here */}
-        </div>
-      )}
-    </main>
+            <section aria-label="Organizations" className={styles.grid}>
+              {loading ? (
+                <p>Loading organizations...</p>
+              ) : filteredOrgs.length > 0 ? (
+                filteredOrgs.map((org) => (
+                  <OrgCard
+                    key={org._id || org.id}
+                    name={org.name}
+                    logo={org.logo}
+                    onClick={() => setSelectedOrg(org)}
+                  />
+                ))
+              ) : (
+                <p>No organizations found.</p>
+              )}
+            </section>
+          </>
+        ) : (
+          <div className={styles.orgDetail}>
+            <button
+              className={styles.backBtn}
+              onClick={() => setSelectedOrg(null)}
+            >
+              ← Back
+            </button>
+            <h2>{selectedOrg.name}</h2>
+            <img src={selectedOrg.logo} alt={`${selectedOrg.name} logo`} />
+            <p>{selectedOrg.description}</p>
+          </div>
+        )}
+      </main>
 
-    <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
-  </>
-);
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+    </>
+  );
 }
