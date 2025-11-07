@@ -3,14 +3,18 @@ import LoginModal from "../../components/LoginModal/LoginModal";
 import OrgCard from "../OrgCard/OrgCard";
 import styles from "./StudentOrgsPage.module.css";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function StudentOrgsPage() {
   console.log("StudentOrgsPage rendered");
   const [loginOpen, setLoginOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const { user } = useAuth(); // <-- get logged-in user
+  const { user } = useAuth(); // get logged-in user
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(true); // add loading state
+  const [selectedOrg, setSelectedOrg] = useState(null);
+  const navigate = useNavigate();
+
   
   console.log("Logged in user:", user); //  logs inside React component
 
@@ -40,62 +44,75 @@ export default function StudentOrgsPage() {
     (org) => org.name && org.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  return (
-    <>
-      <main className={styles.page}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>
-            <span>Student Organizations</span>
-          </h1>
+return (
+  <>
+    <main className={styles.page}>
+      {!selectedOrg ? (
+        <>
+          <header className={styles.header}>
+            <h1 className={styles.title}>
+              <span>Student Organizations</span>
+            </h1>
 
-          <div className={styles.statsRow}>
-            <input
-              type="text"
-              placeholder="Search organizations..."
-              className={styles.searchBar}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <div className={styles.statsRow}>
+              <input
+                type="text"
+                placeholder="Search organizations..."
+                className={styles.searchBar}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
 
-            <div className={styles.actions}>
-              {/* Only show Add/Edit button for admins */}
-              {user?.role === "admin" && (
-                <button
-                  className={styles.pillBtn}
-                  onClick={() => setLoginOpen(true)}
-                >
-                  Add/Edit
-                </button>
-              )}
+              <div className={styles.actions}>
+                {user?.role === "admin" && (
+                  <button
+                    className={styles.pillBtn}
+                    onClick={() => setLoginOpen(true)}
+                  >
+                    Add/Edit
+                  </button>
+                )}
 
-              <div className={styles.menuWrap}>
-                <button className={styles.pillBtn} aria-haspopup="true">
-                  Filter ▾
-                </button>
-                {/* wire your dropdown later */}
+                <div className={styles.menuWrap}>
+                  <button className={styles.pillBtn} aria-haspopup="true">
+                    Filter ▾
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </header>
-      <section aria-label="Organizations" className={styles.grid}>
-        {loading ? (
-          <p>Loading organizations...</p>
-        ) : filteredOrgs.length > 0 ? (
-          filteredOrgs.map((org) => (
-            <OrgCard
-              key={org.id}
-              name={org.name}
-              logo={org.logo || "/ucf-knight-placeholder.png"} // fallback if logo is missing
-            />
-          ))
-        ) : (
-          <p>No organizations found.</p>
-        )}
-      </section>
-      </main>
+          </header>
 
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
-    </>
-  );
+          <section aria-label="Organizations" className={styles.grid}>
+            {loading ? (
+              <p>Loading organizations...</p>
+            ) : filteredOrgs.length > 0 ? (
+              filteredOrgs.map((org) => (
+                <OrgCard
+                  key={org._id || org.id}
+                  name={org.name}
+                  logo={org.logo}
+                  onClick={() => setSelectedOrg(org)}
+                />
+              ))
+            ) : (
+              <p>No organizations found.</p>
+            )}
+          </section>
+        </>
+      ) : (
+        <div className={styles.orgDetail}>
+          <button className={styles.backBtn} onClick={() => setSelectedOrg(null)}>
+            ← Back
+          </button>
+          <h2>{selectedOrg.name}</h2>
+          <img src={selectedOrg.logo} alt={`${selectedOrg.name} logo`} />
+          <p>ID: {selectedOrg._id}</p>
+          {/* You can add description, events, members, etc. here */}
+        </div>
+      )}
+    </main>
+
+    <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+  </>
+);
 }
-

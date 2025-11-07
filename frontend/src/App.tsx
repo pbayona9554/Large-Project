@@ -5,6 +5,7 @@ import StudentOrgsPage from "./pages/StudentOrgsPage/StudentOrgsPage";
 import EventsPage from "./pages/EventsPage/EventsPage";
 import Dashboard from "./pages/Dashboard/Dashboard";
 
+
 export default function App() {
   return (
     <AuthProvider>
