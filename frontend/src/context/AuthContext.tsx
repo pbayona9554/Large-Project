@@ -15,24 +15,24 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   setUser: () => {},
+  logout: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
 const [user, setUser] = useState<User | null>(null);
 
-/*
-  const [user, setUser] = useState<User | null>({
-    name: "Test Admin",
-    email: "admin@ucf.edu",
-    role: "student",
-  });
-*/
+    const logout = () => {
+    // clear user state
+    setUser(null);
+    // remove token or session from localStorage/sessionStorage
+    localStorage.removeItem("token");
+    };
 
-  return (
+    return (
     <AuthContext.Provider value={{ user, setUser }}>
-      {children}
+        {children}
     </AuthContext.Provider>
-  );
+    );
 }
 
 export function useAuth() {

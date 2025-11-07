@@ -77,7 +77,7 @@ export default function StudentOrgsPage() {
                     >
                       Add/Edit
                     </button>
-                  )}
+                  )} 
 
                   <div className={styles.menuWrap}>
                     <button
