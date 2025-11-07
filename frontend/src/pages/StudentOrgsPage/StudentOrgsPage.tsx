@@ -10,29 +10,34 @@ export default function StudentOrgsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { user } = useAuth(); // <-- get logged-in user
   const [orgs, setOrgs] = useState([]);
+  const [loading, setLoading] = useState(true); // add loading state
+  
   console.log("Logged in user:", user); //  logs inside React component
 
-
-  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchOrgs = async () => {
       try {
         const res = await fetch("http://178.128.188.181:5000/api/orgs");
         if (!res.ok) throw new Error("Failed to fetch organizations");
+
         const data = await res.json();
-        setOrgs(data.data || []); // <-- get the array from the response
+        console.log("Fetched orgs response:", data);
+
+        // data.orgs is the array; fallback to [] if undefined
+        setOrgs(Array.isArray(data.orgs) ? data.orgs : []);
       } catch (err) {
         console.error("Error fetching organizations:", err);
+        setOrgs([]);
       } finally {
-      setLoading(false);
-    }
+        setLoading(false); // stop loading when fetch completes
+      }
     };
 
     fetchOrgs();
   }, []);
 
-  const filteredOrgs = orgs.filter((org) =>
-    org.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrgs = orgs.filter(
+    (org) => org.name && org.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
