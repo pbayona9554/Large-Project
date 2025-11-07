@@ -2,6 +2,7 @@ import { useState } from "react";
 import LoginModal from "../../components/LoginModal/LoginModal";
 import OrgCard from "../OrgCard/OrgCard";
 import styles from "./StudentOrgsPage.module.css";
+import { useAuth } from "../../context/AuthContext";
 
 const MOCK_ORGS = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,
@@ -10,8 +11,12 @@ const MOCK_ORGS = Array.from({ length: 20 }, (_, i) => ({
 }));
 
 export default function StudentOrgsPage() {
+  console.log("StudentOrgsPage rendered");
   const [loginOpen, setLoginOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const { user } = useAuth(); // <-- get logged-in user
+  console.log("Logged in user:", user); //  logs inside React component
+
 
   return (
     <>
@@ -31,12 +36,16 @@ export default function StudentOrgsPage() {
             />
 
             <div className={styles.actions}>
-              <button
-                className={styles.pillBtn}
-                onClick={() => setLoginOpen(true)}
-              >
-                Add/Edit
-              </button>
+              {/* Only show Add/Edit button for admins */}
+              {user?.role === "admin" && (
+                <button
+                  className={styles.pillBtn}
+                  onClick={() => setLoginOpen(true)}
+                >
+                  Add/Edit
+                </button>
+              )}
+
               <div className={styles.menuWrap}>
                 <button className={styles.pillBtn} aria-haspopup="true">
                   Filter ▾
@@ -52,10 +61,10 @@ export default function StudentOrgsPage() {
             <OrgCard key={org.id} name={org.name} logo={org.logo} />
           ))}
         </section>
-
       </main>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );
 }
+

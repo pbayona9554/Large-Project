@@ -2,6 +2,7 @@ import { useState } from "react";
 import Modal from "../Modal/Modal";
 import styles from "./LoginModal.module.css";
 import keyhole from "../../assets/keyhole.svg";
+import { useAuth } from "../../context/AuthContext";
 
 type LoginModalProps = {
   open: boolean;
@@ -11,6 +12,7 @@ type LoginModalProps = {
 type Role = "member" | "officer";
 
 export default function LoginModal({ open, onClose }: LoginModalProps) {
+  const { setUser } = useAuth();
   const [isSignup, setIsSignup] = useState(false);
   const [animating, setAnimating] = useState(false);
 
@@ -83,6 +85,12 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
           alert(`Login failed: ${data.message || "Unknown error"}`);
           return;
         }
+
+        setUser({
+          name: data.name,
+          email: data.email,
+          role: data.role, // must be "admin" or "student"
+        });
 
         alert("Login successful!");
         onClose();
