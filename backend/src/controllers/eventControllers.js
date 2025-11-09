@@ -32,3 +32,40 @@ exports.createEvent = async (req, res) => {
     res.status(500).json({ error: "Failed to create event" });
   }
 };
+
+// POST /api/events/:id/rsvp
+export const rsvpEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    // Check if already RSVP'd
+    if (event.rsvps.includes(req.user.id)) {
+      return res.status(400).json({ message: "You already RSVP'd to this event" });
+    }
+
+    event.rsvps.push(req.user.id);
+    await event.save();
+
+    res.json({ message: "RSVP successful", event });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// POST /api/events/:id/cancel-rsvp
+export const cancelRsvp = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    event.rsvps = event.rsvps.filter(
+      (userId) => userId.toString() !== req.user.id
+    );
+    await event.save();
+
+    res.json({ message: "RSVP canceled", event });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
