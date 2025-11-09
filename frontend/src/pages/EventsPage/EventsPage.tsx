@@ -5,7 +5,7 @@ import styles from "./EventsPage.module.css";
 
 import searchIcon from "../../assets/events.png"; // for magnifying glcass
 
-const MOCK_EVENTS = Array.from({ length: 9 }, (_, i) => ({
+const MOCK_EVENTS = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,
   name: "Event Name",
   logo: "/ucf-knight-placeholder.png",
@@ -24,17 +24,14 @@ export default function EventsPage() {
           </h1>
 
           <div className={styles.searchRow}>
-            {/* search bar – same visual style as the old statBox */}
-            <div className={styles.searchBox}>
-              <img src={searchIcon} alt="Search" className={styles.searchIcon} />
-              <input
-                type="text"
-                placeholder="Search events..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={styles.searchInput}
-              />
-            </div>
+          {/* search bar – same visual style as the old statBox */}
+          <input
+            type="text"
+            placeholder="Search events..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={styles.searchBox}
+          />
 
             {/* keep the Add/Edit button */}
             <div className={styles.actions}>
