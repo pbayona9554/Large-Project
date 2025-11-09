@@ -19,6 +19,15 @@ const MOCK_EVENTS = Array.from({ length: 10 }, (_, i) => ({
 
 export default function UserPage() {
   const [loginOpen, setLoginOpen] = useState(false);
+  console.log("StudentOrgsPage rendered");
+
+
+  return (
+    <div>
+      <h1>TEST: StudentOrgsPage Loaded</h1>
+    </div>
+  );
+
 
 
   return (

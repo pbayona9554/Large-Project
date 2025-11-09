@@ -1,13 +1,12 @@
-//This file defines the route for all related events functionality APIs
-
+// src/routes/eventRoutes.js
 const express = require("express");
 const router = express.Router();
 const {
     getAllEvents,
     createEvent
-} = require("../controllers/eventController");
+} = require("../controllers/eventControllers");
 
 router.get("/", getAllEvents);
-router.post("/",createEvent);
+router.post("/", createEvent);
 
 module.exports = router;
