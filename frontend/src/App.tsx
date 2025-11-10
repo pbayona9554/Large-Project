@@ -4,6 +4,7 @@ import Sidebar from "./components/SideBar/Sidebar";
 import StudentOrgsPage from "./pages/StudentOrgsPage/StudentOrgsPage";
 import EventsPage from "./pages/EventsPage/EventsPage";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import CalendarPage from "./pages/CalendarPage/CalendarPage";
 
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
             <Route path="/orgs" element={<StudentOrgsPage />} />
             <Route path="/events" element={<EventsPage />} />  
             <Route path="/my-dashboard" element={<Dashboard />} />  
+            <Route path="/calendar" element={<CalendarPage />} />
           </Routes>
         </main>
       </Router>
