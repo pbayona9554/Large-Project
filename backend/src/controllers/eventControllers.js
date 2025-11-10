@@ -1,73 +1,190 @@
-//All API code for events will be here
+const { ObjectId } = require("mongodb");
+const { getDB } = require("../config/db");
 
-
-//const Event = require("../models/Event"); // Mongoose model or db.collection('events')
-const {MongoClient} = require("mogodb");
-require("dotenv").config();
-const MONGO_URI = process.env.MONGO_URI;
-const DB_NAME = process.env.DB_NAME;
-let db;
-
+// ==============================================
 // GET /api/events
+// List all events (with search, category, sorting)
+// ==============================================
 exports.getAllEvents = async (req, res) => {
-  // Return list of all events
-  // Support filtering or sorting via query params
-  try{
-    const events = await db.collection("Events").find().toArray();
-    res.status(400).json({events});
-  } 
-  catch {
-    res.status(500).json({error : "Failed to fetch events"});
+  try {
+    const db = getDB();
+    const { search, category, sort } = req.query;
+
+    const filter = {};
+    if (category) filter.category = category;
+    if (search) filter.name = { $regex: search, $options: "i" };
+
+    let cursor = db.collection("Events").find(filter);
+
+    // Sorting options
+    if (sort === "alphabetical") cursor = cursor.sort({ name: 1 });
+    if (sort === "date") cursor = cursor.sort({ date: 1 });
+    if (sort === "featured") cursor = cursor.sort({ featured: -1 });
+
+    const events = await cursor.toArray();
+    res.status(200).json({ count: events.length, events });
+  } catch (err) {
+    console.error("Get all events error:", err);
+    res.status(500).json({ error: "Failed to fetch events" });
   }
-
 };
 
-// GET /api/events/:id
-exports.getEventById = async (req, res) => {
-  // Find event by ID and return details
+// ==============================================
+// GET /api/events/:name
+// Get a single event by name
+// ==============================================
+exports.getEventByName = async (req, res) => {
+  try {
+    const db = getDB();
+    const eventName = decodeURIComponent(req.params.name);
+
+    const event = await db.collection("Events").findOne({ name: eventName });
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+    res.status(200).json(event);
+  } catch (err) {
+    console.error("Get event by name error:", err);
+    res.status(500).json({ error: "Failed to fetch event" });
+  }
 };
 
+// ==============================================
 // POST /api/events
+// Create new event (officer/admin only)
+// ==============================================
 exports.createEvent = async (req, res) => {
-  const {name, decription, date, location , clubId} = req.body;
+  try {
+    const db = getDB();
+    const { name, description, date, location, orgName, category } = req.body;
 
-  const newEvent = {
-    name,
-    description: description || "",
-    date: new Date(date),
-    location,
-    clubId
+    if (!name || !date || !location || !orgName) {
+      return res
+        .status(400)
+        .json({ error: "Name, date, location, and orgName are required" });
+    }
+
+    // Validate org existence
+    const org = await db.collection("Org").findOne({ name: orgName });
+    if (!org) return res.status(404).json({ error: "Organization not found" });
+
+    const newEvent = {
+      name,
+      description: description || "",
+      date: new Date(date),
+      location,
+      orgName,
+      category: category || org.category,
+      createdAt: new Date(),
+      featured: false,
+    };
+
+    const result = await db.collection("Events").insertOne(newEvent);
+    res.status(201).json({
+      message: "Event created successfully",
+      event: { _id: result.insertedId, ...newEvent },
+    });
+  } catch (err) {
+    console.error("Create event error:", err);
+    res.status(500).json({ error: "Failed to create event" });
   }
 };
 
-// PATCH /api/events/:id
-exports.updateEvent = async (req, res) => {
-  // Officer/Admin only
-  // Update event fields
+// ==============================================
+// PATCH /api/events/:name
+// Update an existing event by name (officer/admin)
+// ==============================================
+exports.updateEventByName = async (req, res) => {
+  try {
+    const db = getDB();
+    const eventName = decodeURIComponent(req.params.name);
+    const updates = req.body;
+
+    const result = await db
+      .collection("Events")
+      .findOneAndUpdate(
+        { name: eventName },
+        { $set: updates },
+        { returnDocument: "after" }
+      );
+
+    if (!result.value)
+      return res.status(404).json({ error: "Event not found" });
+
+    res
+      .status(200)
+      .json({ message: "Event updated successfully", event: result.value });
+  } catch (err) {
+    console.error("Update event error:", err);
+    res.status(500).json({ error: "Failed to update event" });
+  }
 };
 
-// DELETE /api/events/:id
-exports.deleteEvent = async (req, res) => {
-  // Officer/Admin only
-  // Delete the event
+// ==============================================
+// DELETE /api/events/:name
+// Delete an event by name (officer/admin)
+// ==============================================
+exports.deleteEventByName = async (req, res) => {
+  try {
+    const db = getDB();
+    const eventName = decodeURIComponent(req.params.name);
+
+    const result = await db.collection("Events").deleteOne({ name: eventName });
+    if (!result.deletedCount)
+      return res.status(404).json({ error: "Event not found" });
+
+    res.status(200).json({ message: "Event deleted successfully" });
+  } catch (err) {
+    console.error("Delete event error:", err);
+    res.status(500).json({ error: "Failed to delete event" });
+  }
 };
 
-// POST /api/events/:id/rsvp
+// ==============================================
+// POST /api/events/:name/rsvp
+// User RSVPs to an event
+// ==============================================
 exports.rsvpEvent = async (req, res) => {
-  // Member joins event attendees
+  try {
+    const db = getDB();
+    const eventName = decodeURIComponent(req.params.name);
+    const userId = req.user?.id;
+
+    const event = await db.collection("Events").findOne({ name: eventName });
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(String(userId)) },
+      { $addToSet: { eventsRSVPd: eventName } }
+    );
+
+    res.status(200).json({ message: `RSVP'd to ${eventName}` });
+  } catch (err) {
+    console.error("RSVP event error:", err);
+    res.status(500).json({ error: "Failed to RSVP for event" });
+  }
 };
 
-// POST /api/events/:id/cancel-rsvp
+// ==============================================
+// POST /api/events/:name/cancel-rsvp
+// User cancels RSVP for an event
+// ==============================================
 exports.cancelRSVP = async (req, res) => {
-  // Remove user from event attendees
-};
+  try {
+    const db = getDB();
+    const eventName = decodeURIComponent(req.params.name);
+    const userId = req.user?.id;
 
-// GET /api/events?search=<query>
-exports.searchEvents = async (req, res) => {
-  // Use regex or text search on event titles/descriptions
-};
+    const event = await db.collection("Events").findOne({ name: eventName });
+    if (!event) return res.status(404).json({ error: "Event not found" });
 
-// GET /api/events?sort=alphabetical/featured/date
-exports.sortEvents = async (req, res) => {
-  // Handle sorting logic
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(String(userId)) },
+      { $pull: { eventsRSVPd: eventName } }
+    );
+
+    res.status(200).json({ message: `Canceled RSVP for ${eventName}` });
+  } catch (err) {
+    console.error("Cancel RSVP error:", err);
+    res.status(500).json({ error: "Failed to cancel RSVP" });
+  }
 };
