@@ -2,8 +2,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { getDB } = require("../config/db");
 const crypto = require("crypto");
-const sgMail = require("@sendgrid/mail");
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+//const sgMail = require("@sendgrid/mail");
+//sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // ======================================
 // POST /api/auth/signup
@@ -38,18 +38,18 @@ exports.SignUp = async (req, res) => {
     const result = await db.collection("users").insertOne(newUser);
 
     // Send verification email (if SENDGRID key available)
-    if (process.env.SENDGRID_API_KEY && process.env.EMAIL_FROM) {
-      try {
-        await sgMail.send({
-          to: email,
-          from: process.env.EMAIL_FROM,
-          subject: "Verify your email",
-          text: `Hello ${name},\n\nYour verification code is: ${verificationCode}\n\nEnter this code in the app to verify your email.`,
-        });
-      } catch (emailErr) {
-        console.warn("Email could not be sent:", emailErr.message);
-      }
-    }
+    //if (process.env.SENDGRID_API_KEY && process.env.EMAIL_FROM) {
+      //try {
+        //await sgMail.send({
+          //to: email,
+          //from: process.env.EMAIL_FROM,
+          //subject: "Verify your email",
+          //text: `Hello ${name},\n\nYour verification code is: ${verificationCode}\n\nEnter this code in the app to verify your email.`,
+        //});
+      //} catch (emailErr) {
+        //console.warn("Email could not be sent:", emailErr.message);
+      //}
+    //}
 
     const token = jwt.sign(
       { id: result.insertedId, email, role: newUser.role },
