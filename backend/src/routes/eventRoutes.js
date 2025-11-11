@@ -8,7 +8,7 @@ const {
   deleteEventByName,
   rsvpEvent,
   cancelRSVP,
-} = require("../controllers/eventController");
+} = require("../controllers/eventControllers");
 
 const { protect } = require("../middleware/authMiddleware");
 const { officerOnly } = require("../middleware/roleMiddleware");

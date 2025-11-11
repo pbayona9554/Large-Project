@@ -19,7 +19,7 @@ exports.getAllOrgs = async (req, res) => {
     if (search) filter.name = { $regex: search, $options: "i" };
 
     // Query
-    let cursor = db.collection("Org").find(filter);
+    let cursor = db.collection("clubs").find(filter);
 
     // Optional sorting (?sort=alphabetical/date/featured)
     if (sort === "alphabetical") cursor = cursor.sort({ name: 1 });
@@ -27,7 +27,7 @@ exports.getAllOrgs = async (req, res) => {
     if (sort === "date") cursor = cursor.sort({ createdAt: -1 });
 
     const orgs = await cursor.toArray();
-    res.status(200).json({ count: orgs.length, organizations: orgs });
+    res.status(200).json({ count: orgs.length, orgs });
   } catch (err) {
     console.error("Get all orgs error:", err);
   }
@@ -43,7 +43,7 @@ exports.getOrgByName = async (req, res) => {
     const db = getDB();
     const orgName = decodeURIComponent(req.params.name);
 
-    const org = await db.collection("Org").findOne({ name: orgName });
+    const org = await db.collection("clubs").findOne({ name: orgName });
     if (!org) return res.status(404).json({ error: "Organization not found" });
 
     res.status(200).json(org);
@@ -68,7 +68,7 @@ exports.createOrg = async (req, res) => {
       return res.status(400).json({ error: "Name and category are required" });
     }
 
-    const existing = await db.collection("Org").findOne({ name });
+    const existing = await db.collection("clubs").findOne({ name });
     if (existing)
       return res.status(400).json({ error: "Organization name already exists" });
 
@@ -80,7 +80,7 @@ exports.createOrg = async (req, res) => {
       featured: false,
     };
 
-    const result = await db.collection("Org").insertOne(newOrg);
+    const result = await db.collection("clubs").insertOne(newOrg);
     res.status(201).json({
       message: "Organization created successfully",
       organization: { _id: result.insertedId, ...newOrg },
@@ -103,7 +103,7 @@ exports.updateOrgByName = async (req, res) => {
     const updates = req.body;
 
     const result = await db
-      .collection("Org")
+      .collection("clubs")
       .findOneAndUpdate(
         { name: orgName },
         { $set: updates },
@@ -131,7 +131,7 @@ exports.deleteOrgByName = async (req, res) => {
     const db = getDB();
     const orgName = decodeURIComponent(req.params.name);
 
-    const result = await db.collection("Org").deleteOne({ name: orgName });
+    const result = await db.collection("clubs").deleteOne({ name: orgName });
     if (!result.deletedCount)
       return res.status(404).json({ error: "Organization not found" });
 
@@ -152,7 +152,7 @@ exports.joinOrg = async (req, res) => {
     const orgName = decodeURIComponent(req.params.name);
     const userId = req.user?.id;
 
-    const org = await db.collection("Org").findOne({ name: orgName });
+    const org = await db.collection("clubs").findOne({ name: orgName });
     if (!org) return res.status(404).json({ error: "Organization not found" });
 
     await db.collection("users").updateOne(
@@ -177,7 +177,7 @@ exports.leaveOrg = async (req, res) => {
     const orgName = decodeURIComponent(req.params.name);
     const userId = req.user?.id;
 
-    const org = await db.collection("Org").findOne({ name: orgName });
+    const org = await db.collection("clubs").findOne({ name: orgName });
     if (!org) return res.status(404).json({ error: "Organization not found" });
 
     await db.collection("users").updateOne(

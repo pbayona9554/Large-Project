@@ -30,7 +30,13 @@ export default function StudentOrgsPage() {
         console.log("Fetched orgs response:", data);
 
         // data.orgs is the array; fallback to [] if undefined
-        setOrgs(Array.isArray(data.orgs) ? data.orgs : []);
+        setOrgs(
+          Array.isArray(data.organizations)
+            ? data.organizations
+            : Array.isArray(data.orgs)
+            ? data.orgs
+            : []
+        );
       } catch (err) {
         console.error("Error fetching organizations:", err);
         setOrgs([]);
