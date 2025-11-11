@@ -37,11 +37,11 @@
   
   .searchBar {
     display: grid;
-    flex: 1;
-    min-width: 250px;
     align-items: center;
     width: 100%;
     box-sizing: border-box;
+    flex: 1;
+    min-width: 250px;
     padding: 10px 14px;
     border-radius: 999px;
     border: 2px solid #ccc;
@@ -93,15 +93,4 @@
   color: var(--text);
   text-align: center;
   margin-bottom: 8px;
-}
-
-@media (max-width: 900px) {
-  .gridContainer {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-
-  .sectionTitle {
-    text-align: center;
-  }
 }
