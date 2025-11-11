@@ -1,3 +1,4 @@
+
 // Configure MongoDB connection (no mongoose)
 const { MongoClient } = require("mongodb");
 require("dotenv").config();
@@ -29,3 +30,4 @@ function getDB() {
 }
 
 module.exports = { connectDB, getDB };
+

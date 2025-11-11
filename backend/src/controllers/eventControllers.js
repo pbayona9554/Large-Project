@@ -1,3 +1,4 @@
+
 const { ObjectId } = require("mongodb");
 const { getDB } = require("../config/db");
 
@@ -6,6 +7,7 @@ const { getDB } = require("../config/db");
 // List all events (with search, category, sorting)
 // ==============================================
 exports.getAllEvents = async (req, res) => {
+
   try {
     const db = getDB();
     const { search, category, sort } = req.query;
@@ -53,6 +55,7 @@ exports.getEventByName = async (req, res) => {
 // Create new event (officer/admin only)
 // ==============================================
 exports.createEvent = async (req, res) => {
+
   try {
     const db = getDB();
     const { name, description, date, location, orgName, category } = req.body;
@@ -85,9 +88,11 @@ exports.createEvent = async (req, res) => {
     });
   } catch (err) {
     console.error("Create event error:", err);
+
     res.status(500).json({ error: "Failed to create event" });
   }
 };
+
 
 // ==============================================
 // PATCH /api/events/:name

@@ -1,8 +1,13 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { getDB } = require("../config/db");
+const crypto = require("crypto");
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+// ======================================
 // POST /api/auth/signup
+// ======================================
 exports.SignUp = async (req, res) => {
   const { name, email, password, role } = req.body;
   try {
@@ -17,16 +22,34 @@ exports.SignUp = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Generate verification code (optional)
+    const verificationCode = crypto.randomInt(100000, 999999).toString();
+
     const newUser = {
       name,
       email,
       password: hashedPassword,
       role: role || "member",
       verification: false,
+      verificationCode,
       clubsjoined: [],
     };
 
     const result = await db.collection("users").insertOne(newUser);
+
+    // Send verification email (if SENDGRID key available)
+    if (process.env.SENDGRID_API_KEY && process.env.EMAIL_FROM) {
+      try {
+        await sgMail.send({
+          to: email,
+          from: process.env.EMAIL_FROM,
+          subject: "Verify your email",
+          text: `Hello ${name},\n\nYour verification code is: ${verificationCode}\n\nEnter this code in the app to verify your email.`,
+        });
+      } catch (emailErr) {
+        console.warn("Email could not be sent:", emailErr.message);
+      }
+    }
 
     const token = jwt.sign(
       { id: result.insertedId, email, role: newUser.role },
@@ -35,7 +58,7 @@ exports.SignUp = async (req, res) => {
     );
 
     res.status(201).json({
-      message: "Signup successful",
+      message: "Signup successful. Please check your email for verification code.",
       token,
       user: { id: result.insertedId, ...newUser, password: undefined },
     });
@@ -45,38 +68,33 @@ exports.SignUp = async (req, res) => {
   }
 };
 
+// ======================================
 // POST /api/auth/login
+// ======================================
 exports.Login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const db = getDB();
 
-    // 1. Validate request
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password required" });
     }
 
-    // 2. Find user
     const user = await db.collection("users").findOne({ email });
-    if (!user) {
+    if (!user)
       return res.status(400).json({ error: "Invalid email or password" });
-    }
 
-    // 3. Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    if (!isMatch)
       return res.status(400).json({ error: "Invalid email or password" });
-    }
 
-    // 4. Generate JWT
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    // 5. Return user info
     res.status(200).json({
       message: "Login successful",
       token,
@@ -95,15 +113,13 @@ exports.Login = async (req, res) => {
   }
 };
 
-
-
+// ======================================
 // GET /api/auth/me
+// ======================================
 exports.getCurrentUser = async (req, res) => {
   try {
-    // req.user comes from protect middleware
-    if (!req.user) {
+    if (!req.user)
       return res.status(401).json({ error: "Not authorized" });
-    }
 
     res.status(200).json({
       message: "Current user fetched successfully",
@@ -111,6 +127,32 @@ exports.getCurrentUser = async (req, res) => {
     });
   } catch (err) {
     console.error("Get current user error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// ======================================
+// POST /api/auth/verify
+// ======================================
+exports.VerifyEmail = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    const db = getDB();
+
+    const user = await db.collection("users").findOne({ email });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (user.verificationCode === code) {
+      await db.collection("users").updateOne(
+        { email },
+        { $set: { verification: true }, $unset: { verificationCode: "" } }
+      );
+      return res.status(200).json({ message: "Email verified successfully" });
+    } else {
+      return res.status(400).json({ error: "Invalid verification code" });
+    }
+  } catch (err) {
+    console.error("Verify email error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+
 const {
   getAllOrgs,
   getOrgByName,
@@ -25,5 +26,6 @@ router.delete("/:name", protect, officerOnly, deleteOrgByName);
 // Member
 router.post("/:name/join", protect, joinOrg);
 router.post("/:name/leave", protect, leaveOrg);
+
 
 module.exports = router;

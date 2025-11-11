@@ -30,9 +30,9 @@ exports.getAllOrgs = async (req, res) => {
     res.status(200).json({ count: orgs.length, organizations: orgs });
   } catch (err) {
     console.error("Get all orgs error:", err);
-    res.status(500).json({ error: "Failed to fetch organizations" });
   }
 };
+
 
 // ==============================================
 // GET /api/orgs/:name
@@ -49,9 +49,11 @@ exports.getOrgByName = async (req, res) => {
     res.status(200).json(org);
   } catch (err) {
     console.error("Get org by name error:", err);
+
     res.status(500).json({ error: "Failed to fetch organization" });
   }
 };
+
 
 // ==============================================
 // POST /api/orgs
@@ -88,6 +90,7 @@ exports.createOrg = async (req, res) => {
     res.status(500).json({ error: "Failed to create organization" });
   }
 };
+
 
 // ==============================================
 // PATCH /api/orgs/:name

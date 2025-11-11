@@ -19,6 +19,15 @@ const MOCK_EVENTS = Array.from({ length: 10 }, (_, i) => ({
 
 export default function UserPage() {
   const [loginOpen, setLoginOpen] = useState(false);
+  console.log("StudentOrgsPage rendered");
+
+
+  return (
+    <div>
+      <h1>TEST: StudentOrgsPage Loaded</h1>
+    </div>
+  );
+
 
 
   return (
@@ -26,7 +35,7 @@ export default function UserPage() {
       <main className={styles.page}>
         <header className={styles.header}>
           <h1 className={styles.title}>
-            <span>My Dashboard</span>
+            <span>Welcome, User!</span>
           </h1>
 
           {/* Search bar */}
@@ -36,26 +45,29 @@ export default function UserPage() {
             className={styles.searchBar}
           />
 
-          {/* Organizations & Events Headers */}
-          <h3 className={styles.title}>
-            <span> Organizations I'm part of: </span>
-            <span> Events to look for: </span>
-          </h3>
-
         </header>
 
-        <section aria-label="MyOrganizations" className={styles.grid}>
-          {MOCK_ORGS.map((org) => (
-            <OrgCard key={org.id} name={org.name} logo={org.logo} />
-          ))}
-        </section>
-
-        <section aria-label="MyEvents" className={styles.grid}>
-          {MOCK_EVENTS.map((ev) => (
-            <OrgCard key={ev.id} name={ev.name} logo={ev.logo} />
-          ))}
-        </section>
-
+        <div className={styles.gridContainer}>
+          {/* Organizations Section */}
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>My Organizations</h2>
+            <section aria-label="MyOrganizations" className={styles.grid}>
+              {MOCK_ORGS.map((org) => (
+                <OrgCard key={org.id} name={org.name} logo={org.logo} />
+              ))}
+            </section>
+          </div>
+          
+          {/* Events Section */}
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>My Events</h2>
+            <section aria-label="MyEvents" className={styles.grid}>
+              {MOCK_EVENTS.map((ev) => (
+                <OrgCard key={ev.id} name={ev.name} logo={ev.logo} />
+              ))}
+            </section>
+          </div>
+        </div>
       </main>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />

@@ -2,13 +2,17 @@ import { useState } from "react";
 import Modal from "../Modal/Modal";
 import styles from "./LoginModal.module.css";
 import keyhole from "../../assets/keyhole.svg";
+import { useAuth } from "../../context/AuthContext";
 
 type LoginModalProps = {
   open: boolean;
   onClose: () => void;
 };
 
+type Role = "member" | "officer";
+
 export default function LoginModal({ open, onClose }: LoginModalProps) {
+  const { setUser } = useAuth();
   const [isSignup, setIsSignup] = useState(false);
   const [animating, setAnimating] = useState(false);
 
@@ -21,27 +25,79 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
   const [lastName, setLastName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPwd, setSignupPwd] = useState("");
+  const [role, setRole] = useState<Role>("member");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (isSignup) {
-      // Create account logic
-      setTimeout(() => {
-        // After creating account, go back to Login mode
+    try {
+      if (isSignup) {
+        if (!signupEmail.endsWith("@ucf.edu")) {
+          alert("Please use your @ucf.edu email address");
+          return;
+        }
+
+        const payload = {
+          name: `${firstName} ${lastName}`,
+          email: signupEmail,
+          password: signupPwd,
+          role: role === "officer" ? "admin" : "student",
+        };
+
+        console.log("Sending signup payload:", payload);
+
+        const res = await fetch("http://178.128.188.181:5000/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        console.log("Signup response:", data);
+
+        if (!res.ok) {
+          alert(`Signup failed: ${data.message || "Unknown error"}`);
+          return;
+        }
+
+        alert("Signup successful!");
         setIsSignup(false);
         setFirstName("");
         setLastName("");
         setSignupEmail("");
         setSignupPwd("");
-      }, 500);
-    } else {
-      // Trigger animation for sign in
-      setAnimating(true);
-      setTimeout(() => {
-        setAnimating(false);
-        onClose(); // close modal after animation
-      }, 1000);
+        setRole("member");
+      } else {
+        const payload = { email, password: pwd };
+
+        console.log("Sending login payload:", payload);
+
+        const res = await fetch("http://178.128.188.181:5000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        console.log("Login response:", data);
+
+        if (!res.ok) {
+          alert(`Login failed: ${data.message || "Unknown error"}`);
+          return;
+        }
+
+        setUser({
+          name: data.name,
+          email: data.email,
+          role: data.role, // must be "admin" or "student"
+        });
+
+        alert("Login successful!");
+        onClose();
+      }
+    } catch (err) {
+      console.error("Error during auth:", err);
+      alert("Something went wrong. Please try again.");
     }
   }
 
@@ -53,6 +109,7 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
     setLastName("");
     setSignupEmail("");
     setSignupPwd("");
+    setRole("member");
   }
 
   return (
@@ -127,6 +184,26 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
                     onChange={(e) => setSignupPwd(e.target.value)}
                     required
                   />
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.srOnly} htmlFor="role">
+                    Role
+                  </label>
+                  <select
+                    id="role"
+                    className={`${styles.input} ${styles.select}`}
+                    value={role}
+                    onChange={(e) => setRole(e.target.value as Role)}
+                    required
+                    aria-label="Select role"
+                  >
+                    <option value="member">Member (Student)</option>
+                    <option value="officer">Officer (Administrator)</option>
+                  </select>
+                  <p className={styles.helpText}>
+                    Officers can manage org content. Members have regular access.
+                  </p>
                 </div>
               </>
             ) : (

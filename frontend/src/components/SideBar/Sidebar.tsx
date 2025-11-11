@@ -7,6 +7,7 @@ import eventsIcon from "../../assets/events.png";
 import calendarIcon from "../../assets/calendar.png";
 import loginIcon from "../../assets/login.png";
 import LoginModal from "../LoginModal/LoginModal";
+import { useAuth } from "../../context/AuthContext";
 
 type Item = {
   label: string;
@@ -16,6 +17,7 @@ type Item = {
 };
 
 export default function Sidebar() {
+  const { user, setUser } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
@@ -32,9 +34,17 @@ export default function Sidebar() {
     { label: "Calendar", href: "/calendar", icon: <img src={calendarIcon} alt="Calendar" /> },
     { label: "Events", href: "/events", icon: <img src={eventsIcon} alt="Events" /> },
     {
-      label: "Log In",
-      icon: <img src={loginIcon} alt="Log In" />,
-      action: () => setIsLoginOpen(true),
+      label: user ? "Log Out" : "Log In",
+      icon: <img src={loginIcon} alt={user ? "Log Out" : "Log In"} />,
+      action: () => {
+        if (user) {
+          if (window.confirm("Do you want to log out?")) {
+            setUser(null); // Logs out
+          }
+        } else {
+          setIsLoginOpen(true); // Opens login modal
+        }
+      },
     },
   ];
 

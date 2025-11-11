@@ -1,3 +1,4 @@
+
 //This file defines the route for all related authentification APIs
 
 // src/routes/authRoutes.js
@@ -13,4 +14,5 @@ router.post("/signup", SignUp);
 router.post("/me", protect, getCurrentUser);
 
 module.exports = router;
+
 

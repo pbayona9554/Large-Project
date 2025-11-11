@@ -26,4 +26,5 @@ router.delete("/:name", protect, officerOnly, deleteEventByName);
 router.post("/:name/rsvp", protect, rsvpEvent);
 router.post("/:name/cancel-rsvp", protect, cancelRSVP);
 
+
 module.exports = router;
