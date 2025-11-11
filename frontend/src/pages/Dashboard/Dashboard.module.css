@@ -1,7 +1,6 @@
 :root{
     --gold:#f7c546;
     --text:#111;
-    --muted:#6b7280;
     --panel:#e5e5e5;
   }
   
@@ -30,8 +29,8 @@
     margin:0 0 22px;
     font-weight: 900;
     text-align:center;
-    color:#0b0b0b;
-    display:flex;
+    color:var(--text);
+    display: flex;
     flex-direction:column;
   }
   
@@ -45,7 +44,7 @@
     padding: 10px 14px;
     border-radius: 999px;
     border: 2px solid #ccc;
-    background: #fff;
+    background: var(--panel);
     font-size: 16px;
     color: var(--text);
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
