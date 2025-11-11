@@ -1,6 +1,7 @@
 // src/controllers/orgController.js
 const { ObjectId } = require("mongodb");
 const { getDB } = require("../config/db");
+const allowedCategories = ["Tech", "Academic", "Sports", "Cultural", "Social"];
 
 // ==============================================
 // GET /api/orgs
@@ -12,8 +13,13 @@ exports.getAllOrgs = async (req, res) => {
     const { category, search, sort } = req.query;
     const filter = {};
 
-    // Filter by category (e.g. ?category=Academic)
-    if (category) filter.category = category;
+    // Filter by category if it's valid
+    if (category) {
+      if (!allowedCategories.includes(category)) {
+        return res.status(400).json({ error: `Invalid category. Must be one of: ${allowedCategories.join(", ")}` });
+      }
+      filter.category = category;
+    }
 
     // Case-insensitive partial match by name (?search=Coding)
     if (search) filter.name = { $regex: search, $options: "i" };
@@ -30,6 +36,7 @@ exports.getAllOrgs = async (req, res) => {
     res.status(200).json({ count: orgs.length, orgs });
   } catch (err) {
     console.error("Get all orgs error:", err);
+    res.status(500).json({ error: "Failed to fetch organizations" });
   }
 };
 
@@ -64,13 +71,21 @@ exports.createOrg = async (req, res) => {
     const db = getDB();
     const { name, logo, category } = req.body;
 
+    // Validate required fields
     if (!name || !category) {
       return res.status(400).json({ error: "Name and category are required" });
     }
 
+    // Validate category
+    if (!allowedCategories.includes(category)) {
+      return res.status(400).json({ error: `Invalid category. Must be one of: ${allowedCategories.join(", ")}` });
+    }
+
+    // Check for duplicate org name
     const existing = await db.collection("clubs").findOne({ name });
-    if (existing)
+    if (existing) {
       return res.status(400).json({ error: "Organization name already exists" });
+    }
 
     const newOrg = {
       name,

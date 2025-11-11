@@ -16,6 +16,7 @@ export default function StudentOrgsPage() {
   const navigate = useNavigate();
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
+  const [categories, setCategories] = useState(["All"]);
 
   
   console.log("Logged in user:", user); //  logs inside React component
@@ -48,6 +49,26 @@ export default function StudentOrgsPage() {
     fetchOrgs();
   }, []);
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(
+          "http://178.128.188.181:5000/api/orgs/categories"
+        );
+        if (!res.ok) throw new Error("Failed to fetch categories");
+
+        const data = await res.json();
+        console.log("Fetched categories:", data);
+
+        setCategories(["All", ...(data.categories || [])]);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const filteredOrgs = orgs.filter((org) => {
     const matchesSearch =
       org.name && org.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -56,7 +77,7 @@ export default function StudentOrgsPage() {
     return matchesSearch && matchesFilter;
   });
 
-  return (
+return (
     <>
       <main className={styles.page}>
         {!selectedOrg ? (
@@ -83,7 +104,7 @@ export default function StudentOrgsPage() {
                     >
                       Add/Edit
                     </button>
-                  )} 
+                  )}
 
                   <div className={styles.menuWrap}>
                     <button
@@ -94,22 +115,20 @@ export default function StudentOrgsPage() {
                     </button>
                     {filterOpen && (
                       <div className={styles.dropdown}>
-                        {["All", "Academic", "Sports", "Cultural"].map(
-                          (filter) => (
-                            <button
-                              key={filter}
-                              className={`${styles.dropdownItem} ${
-                                activeFilter === filter ? styles.active : ""
-                              }`}
-                              onClick={() => {
-                                setActiveFilter(filter);
-                                setFilterOpen(false);
-                              }}
-                            >
-                              {filter}
-                            </button>
-                          )
-                        )}
+                        {categories.map((filter) => (
+                          <button
+                            key={filter}
+                            className={`${styles.dropdownItem} ${
+                              activeFilter === filter ? styles.active : ""
+                            }`}
+                            onClick={() => {
+                              setActiveFilter(filter);
+                              setFilterOpen(false);
+                            }}
+                          >
+                            {filter}
+                          </button>
+                        ))}
                       </div>
                     )}
                   </div>
