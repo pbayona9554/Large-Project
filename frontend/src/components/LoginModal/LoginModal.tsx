@@ -46,7 +46,7 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
 
         console.log("Sending signup payload:", payload);
 
-        const res = await fetch("http://178.128.188.181:5000/api/auth/register", {
+        const res = await fetch("http://178.128.188.181:5000/api/auth/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
