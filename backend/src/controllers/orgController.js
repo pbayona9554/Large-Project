@@ -33,7 +33,7 @@ exports.getAllOrgs = async (req, res) => {
     if (sort === "date") cursor = cursor.sort({ createdAt: -1 });
 
     const orgs = await cursor.toArray();
-    res.status(200).json({ count: orgs.length, orgs });
+    res.status(200).json({ orgs });
   } catch (err) {
     console.error("Get all orgs error:", err);
     res.status(500).json({ error: "Failed to fetch organizations" });

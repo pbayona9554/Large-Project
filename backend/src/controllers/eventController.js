@@ -23,7 +23,7 @@ exports.getAllEvents = async (req, res) => {
     if (sort === "featured") cursor = cursor.sort({ featured: -1 });
 
     const events = await cursor.toArray();
-    res.status(200).json({ count: events.length, events });
+    res.status(200).json({ events });
   } catch (err) {
     console.error("Get all events error:", err);
     res.status(500).json({ error: "Failed to fetch events" });
