@@ -5,7 +5,6 @@ const allowedCategories = ["Tech", "Academic", "Sports", "Cultural", "Social"];
 
 // ==============================================
 // GET /api/orgs
-// Get all organizations, optional filtering/sorting/search
 // ==============================================
 exports.getAllOrgs = async (req, res) => {
   try {
@@ -13,21 +12,25 @@ exports.getAllOrgs = async (req, res) => {
     const { category, search, sort } = req.query;
     const filter = {};
 
-    // Filter by category if it's valid
+    // Filter by category if valid
     if (category) {
       if (!allowedCategories.includes(category)) {
-        return res.status(400).json({ error: `Invalid category. Must be one of: ${allowedCategories.join(", ")}` });
+        return res
+          .status(400)
+          .json({
+            error: `Invalid category. Must be one of: ${allowedCategories.join(", ")}`
+          });
       }
       filter.category = category;
     }
 
-    // Case-insensitive partial match by name (?search=Coding)
+    // Case-insensitive name search (?search=Coding)
     if (search) filter.name = { $regex: search, $options: "i" };
 
     // Query
     let cursor = db.collection("clubs").find(filter);
 
-    // Optional sorting (?sort=alphabetical/date/featured)
+    // Optional sorting
     if (sort === "alphabetical") cursor = cursor.sort({ name: 1 });
     if (sort === "featured") cursor = cursor.sort({ featured: -1 });
     if (sort === "date") cursor = cursor.sort({ createdAt: -1 });
@@ -40,10 +43,8 @@ exports.getAllOrgs = async (req, res) => {
   }
 };
 
-
 // ==============================================
 // GET /api/orgs/:name
-// Get a single organization by its name
 // ==============================================
 exports.getOrgByName = async (req, res) => {
   try {
@@ -56,46 +57,54 @@ exports.getOrgByName = async (req, res) => {
     res.status(200).json(org);
   } catch (err) {
     console.error("Get org by name error:", err);
-
     res.status(500).json({ error: "Failed to fetch organization" });
   }
 };
 
-
 // ==============================================
 // POST /api/orgs
-// Create a new organization (officer/admin only)
+// Create new organization (officer/admin only)
 // ==============================================
 exports.createOrg = async (req, res) => {
   try {
     const db = getDB();
-    const { name, logo, category } = req.body;
+    const { name, description, logo, category } = req.body;
 
     // Validate required fields
     if (!name || !category) {
-      return res.status(400).json({ error: "Name and category are required" });
+      return res
+        .status(400)
+        .json({ error: "Name and category are required" });
     }
 
     // Validate category
     if (!allowedCategories.includes(category)) {
-      return res.status(400).json({ error: `Invalid category. Must be one of: ${allowedCategories.join(", ")}` });
+      return res
+        .status(400)
+        .json({
+          error: `Invalid category. Must be one of: ${allowedCategories.join(", ")}`
+        });
     }
 
-    // Check for duplicate org name
+    // Check for duplicate
     const existing = await db.collection("clubs").findOne({ name });
     if (existing) {
       return res.status(400).json({ error: "Organization name already exists" });
     }
 
+    const now = new Date();
     const newOrg = {
-      name,
-      logo: logo || "/ucf-knight-placeholder.png",
+      name: name.trim(),
+      description: description || "", // optional field
       category,
-      createdAt: new Date(),
+      logo: logo || "/ucf-knight-placeholder.png",
       featured: false,
+      createdAt: now,
+      updatedAt: now,
     };
 
     const result = await db.collection("clubs").insertOne(newOrg);
+
     res.status(201).json({
       message: "Organization created successfully",
       organization: { _id: result.insertedId, ...newOrg },
@@ -106,16 +115,14 @@ exports.createOrg = async (req, res) => {
   }
 };
 
-
 // ==============================================
 // PATCH /api/orgs/:name
-// Update an existing organization (officer/admin only)
 // ==============================================
 exports.updateOrgByName = async (req, res) => {
   try {
     const db = getDB();
     const orgName = decodeURIComponent(req.params.name);
-    const updates = req.body;
+    const updates = { ...req.body, updatedAt: new Date() };
 
     const result = await db
       .collection("clubs")
@@ -128,9 +135,10 @@ exports.updateOrgByName = async (req, res) => {
     if (!result.value)
       return res.status(404).json({ error: "Organization not found" });
 
-    res
-      .status(200)
-      .json({ message: "Organization updated", organization: result.value });
+    res.status(200).json({
+      message: "Organization updated successfully",
+      organization: result.value,
+    });
   } catch (err) {
     console.error("Update org error:", err);
     res.status(500).json({ error: "Failed to update organization" });
@@ -139,7 +147,6 @@ exports.updateOrgByName = async (req, res) => {
 
 // ==============================================
 // DELETE /api/orgs/:name
-// Delete organization by name (officer/admin only)
 // ==============================================
 exports.deleteOrgByName = async (req, res) => {
   try {
@@ -150,7 +157,7 @@ exports.deleteOrgByName = async (req, res) => {
     if (!result.deletedCount)
       return res.status(404).json({ error: "Organization not found" });
 
-    res.status(200).json({ message: "Organization deleted" });
+    res.status(200).json({ message: "Organization deleted successfully" });
   } catch (err) {
     console.error("Delete org error:", err);
     res.status(500).json({ error: "Failed to delete organization" });
@@ -159,7 +166,6 @@ exports.deleteOrgByName = async (req, res) => {
 
 // ==============================================
 // POST /api/orgs/:name/join
-// User joins organization (must be logged in)
 // ==============================================
 exports.joinOrg = async (req, res) => {
   try {
@@ -172,7 +178,7 @@ exports.joinOrg = async (req, res) => {
 
     await db.collection("users").updateOne(
       { _id: new ObjectId(String(userId)) },
-      { $addToSet: { clubsjoined: orgName } } // store org by name
+      { $addToSet: { clubsjoined: orgName } }
     );
 
     res.status(200).json({ message: `Joined ${orgName} successfully` });
@@ -184,7 +190,6 @@ exports.joinOrg = async (req, res) => {
 
 // ==============================================
 // POST /api/orgs/:name/leave
-// User leaves organization (must be logged in)
 // ==============================================
 exports.leaveOrg = async (req, res) => {
   try {

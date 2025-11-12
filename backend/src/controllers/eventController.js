@@ -1,12 +1,11 @@
+// src/controllers/eventController.js
 const { ObjectId } = require("mongodb");
 const { getDB } = require("../config/db");
 
 // ==============================================
 // GET /api/events
-// List all events (with search, category, sorting)
 // ==============================================
 exports.getAllEvents = async (req, res) => {
-
   try {
     const db = getDB();
     const { search, category, sort } = req.query;
@@ -23,6 +22,7 @@ exports.getAllEvents = async (req, res) => {
     if (sort === "featured") cursor = cursor.sort({ featured: -1 });
 
     const events = await cursor.toArray();
+
     res.status(200).json({ events });
   } catch (err) {
     console.error("Get all events error:", err);
@@ -32,7 +32,6 @@ exports.getAllEvents = async (req, res) => {
 
 // ==============================================
 // GET /api/events/:name
-// Get a single event by name
 // ==============================================
 exports.getEventByName = async (req, res) => {
   try {
@@ -51,32 +50,31 @@ exports.getEventByName = async (req, res) => {
 
 // ==============================================
 // POST /api/events
-// Create new event (officer/admin only)
+// Create new event
 // ==============================================
 exports.createEvent = async (req, res) => {
-
   try {
     const db = getDB();
-    const { name, description, date, location, orgName, category } = req.body;
+    const { name, description, date, location, category, organization, logo } = req.body;
 
-    if (!name || !date || !location || !orgName) {
+    // Validate required fields
+    if (!name || !date || !location || !organization) {
       return res
         .status(400)
-        .json({ error: "Name, date, location, and orgName are required" });
+        .json({ error: "Name, date, location, and organization are required" });
     }
 
-    // Validate org existence
-    const org = await db.collection("Org").findOne({ name: orgName });
-    if (!org) return res.status(404).json({ error: "Organization not found" });
-
     const newEvent = {
-      name,
+      name: name.trim(),
       description: description || "",
       date: new Date(date),
       location,
-      orgName,
-      category: category || org.category,
+      category: category || "General",
+      organization,
+      logo: logo || "/ucf-knight-placeholder.png",
+      attendees: [],
       createdAt: new Date(),
+      updatedAt: new Date(),
       featured: false,
     };
 
@@ -87,21 +85,18 @@ exports.createEvent = async (req, res) => {
     });
   } catch (err) {
     console.error("Create event error:", err);
-
     res.status(500).json({ error: "Failed to create event" });
   }
 };
 
-
 // ==============================================
 // PATCH /api/events/:name
-// Update an existing event by name (officer/admin)
 // ==============================================
 exports.updateEventByName = async (req, res) => {
   try {
     const db = getDB();
     const eventName = decodeURIComponent(req.params.name);
-    const updates = req.body;
+    const updates = { ...req.body, updatedAt: new Date() };
 
     const result = await db
       .collection("Events")
@@ -114,9 +109,10 @@ exports.updateEventByName = async (req, res) => {
     if (!result.value)
       return res.status(404).json({ error: "Event not found" });
 
-    res
-      .status(200)
-      .json({ message: "Event updated successfully", event: result.value });
+    res.status(200).json({
+      message: "Event updated successfully",
+      event: result.value,
+    });
   } catch (err) {
     console.error("Update event error:", err);
     res.status(500).json({ error: "Failed to update event" });
@@ -125,7 +121,6 @@ exports.updateEventByName = async (req, res) => {
 
 // ==============================================
 // DELETE /api/events/:name
-// Delete an event by name (officer/admin)
 // ==============================================
 exports.deleteEventByName = async (req, res) => {
   try {
@@ -145,7 +140,6 @@ exports.deleteEventByName = async (req, res) => {
 
 // ==============================================
 // POST /api/events/:name/rsvp
-// User RSVPs to an event
 // ==============================================
 exports.rsvpEvent = async (req, res) => {
   try {
@@ -156,9 +150,9 @@ exports.rsvpEvent = async (req, res) => {
     const event = await db.collection("Events").findOne({ name: eventName });
     if (!event) return res.status(404).json({ error: "Event not found" });
 
-    await db.collection("users").updateOne(
-      { _id: new ObjectId(String(userId)) },
-      { $addToSet: { eventsRSVPd: eventName } }
+    await db.collection("Events").updateOne(
+      { _id: event._id },
+      { $addToSet: { attendees: new ObjectId(String(userId)) } }
     );
 
     res.status(200).json({ message: `RSVP'd to ${eventName}` });
@@ -170,7 +164,6 @@ exports.rsvpEvent = async (req, res) => {
 
 // ==============================================
 // POST /api/events/:name/cancel-rsvp
-// User cancels RSVP for an event
 // ==============================================
 exports.cancelRSVP = async (req, res) => {
   try {
@@ -181,9 +174,9 @@ exports.cancelRSVP = async (req, res) => {
     const event = await db.collection("Events").findOne({ name: eventName });
     if (!event) return res.status(404).json({ error: "Event not found" });
 
-    await db.collection("users").updateOne(
-      { _id: new ObjectId(String(userId)) },
-      { $pull: { eventsRSVPd: eventName } }
+    await db.collection("Events").updateOne(
+      { _id: event._id },
+      { $pull: { attendees: new ObjectId(String(userId)) } }
     );
 
     res.status(200).json({ message: `Canceled RSVP for ${eventName}` });
