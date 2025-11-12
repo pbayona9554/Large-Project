@@ -86,11 +86,23 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
           return;
         }
 
-        setUser({
-          name: data.name,
-          email: data.email,
-          role: data.role, // must be "admin" or "student"
+        setUser(
+          {
+            name: data.user.name,
+            email: data.user.email,
+            role: data.user.role,
+          },
+          data.token // pass token to context
+        );
+
+        console.log("User set in context:", {
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
         });
+        console.log("Token in context:", data.token);
+        console.log("Token in localStorage:", localStorage.getItem("token"));
+        console.log("User in localStorage:", localStorage.getItem("user"));
 
         alert("Login successful!");
         onClose();

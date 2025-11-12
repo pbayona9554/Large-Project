@@ -20,7 +20,7 @@ export default function App() {
             <Route path="/events" element={<EventsPage />} />  
             <Route path="/my-dashboard" element={<Dashboard />} />  
             <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/add-orgs" element={<AddOrgPage />} />
+            <Route path="/add-org" element={<AddOrgPage />} />
           </Routes>
         </main>
       </Router>

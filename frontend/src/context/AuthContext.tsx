@@ -9,30 +9,52 @@ type User = {
 
 type AuthContextType = {
   user: User | null;
-  setUser: (user: User | null) => void;
+  token: string | null;
+  setUser: (user: User | null, token?: string) => void;
+  logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  token: null,
   setUser: () => {},
   logout: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-const [user, setUser] = useState<User | null>(null);
+  const [user, setUserState] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
-    const logout = () => {
-    // clear user state
-    setUser(null);
-    // remove token or session from localStorage/sessionStorage
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
+
+  const setUser = (user: User | null, token?: string | null) => {
+    setUserState(user);
+    if (token) {
+      setToken(token);
+      localStorage.setItem("token", token);
+    } else {
+      setToken(null);
+      localStorage.removeItem("token");
+    }
+
+    if (user) localStorage.setItem("user", JSON.stringify(user));
+    else localStorage.removeItem("user");
+  };
+
+  const logout = () => {
+    setUserState(null);
+    setToken(null);
     localStorage.removeItem("token");
-    };
+    localStorage.removeItem("user");
+  };
 
-    return (
-    <AuthContext.Provider value={{ user, setUser }}>
-        {children}
+  return (
+    <AuthContext.Provider value={{ user, token, setUser, logout }}>
+      {children}
     </AuthContext.Provider>
-    );
+  );
 }
 
 export function useAuth() {

@@ -1,21 +1,63 @@
 import { useState } from "react";
 import styles from "./AddOrgPage.module.css";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AddEditOrgPage() {
+  const { token } = useAuth();
   const [orgName, setOrgName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState("/ucf-knight-placeholder.png");
 
+  console.log("Token in context:", token);
+  console.log("Token in localStorage:", localStorage.getItem("token"));
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) setImage(URL.createObjectURL(file));
   };
 
-  const handleSave = () => {
-    console.log("Saving organization:", { orgName, adminEmail, category, description });
-    // handle save logic here
+  const handleSave = async () => {
+    // Ensure category and name are provided
+    if (!orgName || !category) {
+      alert("Please fill out the organization name and select a valid category.");
+      return;
+    }
+
+    const orgData = {
+      name: orgName,           // backend expects this key
+      description,
+      category,                // must be one of Tech, Academic, Sports, Cultural, Social
+      logo: image,             // optional
+    };
+
+    console.log("Saving organization:", orgData);
+
+    try {
+      const response = await fetch("http://178.128.188.181:5000/api/orgs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // <-- must be valid token
+        },
+        body: JSON.stringify(orgData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Error creating organization:", data.error);
+        alert(`Failed to create organization: ${data.error}`);
+        return;
+      }
+
+      alert("Organization created successfully!");
+      console.log("Created organization:", data.organization);
+    } catch (error) {
+      console.error("Network error:", error);
+      alert("An error occurred while creating the organization.");
+    }
   };
 
   const handleDelete = () => {
@@ -50,15 +92,13 @@ export default function AddEditOrgPage() {
 
             <div className={styles.field}>
               <label>Category:</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
+              <select value={category} onChange={(e) => setCategory(e.target.value)}>
                 <option value="">Select a category</option>
+                <option value="Tech">Tech</option>
                 <option value="Academic">Academic</option>
+                <option value="Sports">Sports</option>
                 <option value="Cultural">Cultural</option>
-                <option value="Recreational">Recreational</option>
-                <option value="Volunteer">Volunteer</option>
+                <option value="Social">Social</option>
               </select>
             </div>
           </div>

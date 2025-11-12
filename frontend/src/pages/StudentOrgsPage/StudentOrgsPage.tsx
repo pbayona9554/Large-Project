@@ -100,7 +100,7 @@ return (
                   {user?.role === "admin" && (
                     <button
                       className={styles.pillBtn}
-                      onClick={() => setLoginOpen(true)}
+                      onClick={() => navigate("/add-org")}
                     >
                       Add/Edit
                     </button>
