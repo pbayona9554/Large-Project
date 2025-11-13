@@ -4,11 +4,11 @@ const { getDB } = require("../config/db");
 const crypto = require("crypto");
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
+console.log("authController loaded");
 // ======================================
 // POST /api/auth/signup
 // ======================================
-exports.SignUp = async (req, res) => {
+const SignUp = async (req, res) => {
   const { name, email, password, role } = req.body;
   try {
     const db = getDB();
@@ -21,8 +21,6 @@ exports.SignUp = async (req, res) => {
       return res.status(400).json({ error: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Generate verification code (optional)
     const verificationCode = crypto.randomInt(100000, 999999).toString();
 
     const newUser = {
@@ -37,7 +35,6 @@ exports.SignUp = async (req, res) => {
 
     const result = await db.collection("users").insertOne(newUser);
 
-    //Send verification email (if SENDGRID key available)
     if (process.env.SENDGRID_API_KEY && process.env.EMAIL_FROM) {
       try {
         await sgMail.send({
@@ -71,9 +68,8 @@ exports.SignUp = async (req, res) => {
 // ======================================
 // POST /api/auth/login
 // ======================================
-exports.Login = async (req, res) => {
+const Login = async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const db = getDB();
 
@@ -116,7 +112,7 @@ exports.Login = async (req, res) => {
 // ======================================
 // GET /api/auth/me
 // ======================================
-exports.getCurrentUser = async (req, res) => {
+const getCurrentUser = async (req, res) => {
   try {
     if (!req.user)
       return res.status(401).json({ error: "Not authorized" });
@@ -134,7 +130,7 @@ exports.getCurrentUser = async (req, res) => {
 // ======================================
 // POST /api/auth/verify
 // ======================================
-exports.VerifyEmail = async (req, res) => {
+const VerifyEmail = async (req, res) => {
   try {
     const { email, code } = req.body;
     const db = getDB();
@@ -155,4 +151,12 @@ exports.VerifyEmail = async (req, res) => {
     console.error("Verify email error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
+};
+
+// Export all functions together
+module.exports = {
+  SignUp,
+  Login,
+  getCurrentUser,
+  VerifyEmail,
 };
