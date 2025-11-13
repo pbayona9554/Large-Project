@@ -82,6 +82,33 @@
   z-index: 1001;
 }
 
+.rsvpBtn {
+  display: block;
+  margin: 1.5rem auto 0;
+  padding: 0.75rem 1.5rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.rsvpBtn:hover {
+  background-color: #0056b3;
+  transform: scale(1.03);
+}
+
+.rsvpDone {
+  background-color: #4caf50;
+}
+
+.rsvpDone:hover {
+  background-color: #388e3c;
+}
+
 .closeBtn:hover {
   background: #fff;
 }
