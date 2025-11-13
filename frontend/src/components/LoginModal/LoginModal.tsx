@@ -68,7 +68,7 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
         setSignupPwd("");
         setRole("member");
       } else {
-        const payload = { email, password: pwd };
+        const payload = { email: email, password: pwd };
 
         console.log("Sending login payload:", payload);
 
