@@ -33,6 +33,7 @@ exports.protect = async (req, res, next) => {
       role: user.role,
       verification: user.verification,
       clubsjoined: user.clubsjoined,
+      rsvps: user.rsvps || [],
     };
 
     next();

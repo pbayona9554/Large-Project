@@ -147,12 +147,20 @@ exports.rsvpEvent = async (req, res) => {
     const eventName = decodeURIComponent(req.params.name);
     const userId = req.user?.id;
 
+    // Find the event by name
     const event = await db.collection("Events").findOne({ name: eventName });
     if (!event) return res.status(404).json({ error: "Event not found" });
 
+    // Add user to event's attendees array (no duplicates)
     await db.collection("Events").updateOne(
       { _id: event._id },
       { $addToSet: { attendees: new ObjectId(String(userId)) } }
+    );
+
+    // Add event to user's RSVPs array (no duplicates)
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(userId) },
+      { $addToSet: { rsvps: event._id } }
     );
 
     res.status(200).json({ message: `RSVP'd to ${eventName}` });
@@ -171,12 +179,20 @@ exports.cancelRSVP = async (req, res) => {
     const eventName = decodeURIComponent(req.params.name);
     const userId = req.user?.id;
 
+    // Find the event by name
     const event = await db.collection("Events").findOne({ name: eventName });
     if (!event) return res.status(404).json({ error: "Event not found" });
 
+    // Remove user from event's attendees array
     await db.collection("Events").updateOne(
       { _id: event._id },
       { $pull: { attendees: new ObjectId(String(userId)) } }
+    );
+
+    // Remove event from user's RSVPs array
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(userId) },
+      { $pull: { rsvps: event._id } }
     );
 
     res.status(200).json({ message: `Canceled RSVP for ${eventName}` });

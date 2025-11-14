@@ -31,6 +31,7 @@ const SignUp = async (req, res) => {
       verification: false,
       verificationCode,
       clubsjoined: [],
+      rsvps: [],
     };
 
     const result = await db.collection("users").insertOne(newUser);
