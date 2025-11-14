@@ -2,7 +2,7 @@ require("dotenv").config();
 const axios = require("axios");
 const { MongoClient } = require("mongodb");
 
-const BASE_URL = "http://localhost:5000/api"; // adjust port if needed
+const BASE_URL = "/api";
 const MONGO_URI = process.env.MONGO_URI; // make sure this is in your .env
 
 async function main() {
