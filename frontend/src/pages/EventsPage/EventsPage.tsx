@@ -15,11 +15,12 @@ export default function EventsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [clubs, setClubs] = useState<{ id: string; name: string }[]>([]);
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch("http://178.128.188.181:5000/api/events");
+        const res = await fetch(`${BASE_URL}/events`);
         if (!res.ok) throw new Error("Failed to fetch events");
 
         const data = await res.json();
@@ -41,7 +42,7 @@ useEffect(() => {
   const fetchClubs = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://178.128.188.181:5000/api/orgs", {
+      const res = await fetch(`${BASE_URL}/orgs`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -70,7 +71,7 @@ const handleAddEvent = async (form: FormData) => {
 
     console.log("Submitting event:", eventData);
 
-    const res = await fetch("http://178.128.188.181:5000/api/events", {
+    const res = await fetch(`${BASE_URL}/events`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -89,7 +90,7 @@ const handleAddEvent = async (form: FormData) => {
     alert("Event created successfully!");
 
     // Refresh events
-    const refreshed = await fetch("http://178.128.188.181:5000/api/events");
+    const refreshed = await fetch(`${BASE_URL}/events`);
     const refreshedData = await refreshed.json();
     setEvents(Array.isArray(refreshedData.events) ? refreshedData.events : []);
     setAddEventOpen(false);

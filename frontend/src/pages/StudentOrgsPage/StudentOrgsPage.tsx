@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import LoginModal from "../../components/LoginModal/LoginModal";
+import OrgModal from "../../components/OrgModal/OrgModal";
 import OrgCard from "../OrgCard/OrgCard";
 import styles from "./StudentOrgsPage.module.css";
 import { useAuth } from "../../context/AuthContext";
@@ -17,14 +18,19 @@ export default function StudentOrgsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [categories, setCategories] = useState(["All"]);
+<<<<<<< HEAD
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+=======
+  const [orgModalOpen, setOrgModalOpen] = useState(false);
 
+>>>>>>> 709c13f74ff185ab30d377dc3d5aa520c678a9f4
   
   console.log("Logged in user:", user); //  logs inside React component
 
   useEffect(() => {
     const fetchOrgs = async () => {
       try {
-        const res = await fetch("http://178.128.188.181:5000/api/orgs");
+        const res = await fetch(`${BASE_URL}/orgs`);
         if (!res.ok) throw new Error("Failed to fetch organizations");
 
         const data = await res.json();
@@ -52,9 +58,7 @@ export default function StudentOrgsPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(
-          "http://178.128.188.181:5000/api/orgs/categories"
-        );
+        const res = await fetch(`${BASE_URL}/orgs/categories`);
         if (!res.ok) throw new Error("Failed to fetch categories");
 
         const data = await res.json();
@@ -80,7 +84,6 @@ export default function StudentOrgsPage() {
 return (
     <>
       <main className={styles.page}>
-        {!selectedOrg ? (
           <>
             <header className={styles.header}>
               <h1 className={styles.title}>
@@ -145,7 +148,10 @@ return (
                     key={org._id || org.id}
                     name={org.name}
                     logo={org.logo}
-                    onClick={() => setSelectedOrg(org)}
+                    onClick={() => {
+                      setSelectedOrg(org);
+                      setOrgModalOpen(true);
+                    }}
                   />
                 ))
               ) : (
@@ -153,22 +159,21 @@ return (
               )}
             </section>
           </>
-        ) : (
-          <div className={styles.orgDetail}>
-            <button
-              className={styles.backBtn}
-              onClick={() => setSelectedOrg(null)}
-            >
-              ← Back
-            </button>
-            <h2>{selectedOrg.name}</h2>
-            <img src={selectedOrg.logo} alt={`${selectedOrg.name} logo`} />
-            <p>{selectedOrg.description}</p>
-          </div>
-        )}
       </main>
 
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      {/* Org Modal STAYS OVERLAYED ON TOP OF THE PAGE */}
+    <OrgModal
+      isOpen={orgModalOpen}
+      onClose={() => {
+        setOrgModalOpen(false);
+        setSelectedOrg(null);
+      }}
+      orgName={selectedOrg?.name || ""}
+      description={selectedOrg?.description || ""}
+      onJoin={() => console.log("JOIN:", selectedOrg?.name)}
+    />
+
+    <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );
 }

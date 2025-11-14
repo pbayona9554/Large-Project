@@ -26,6 +26,11 @@ async function start() {
     app.use("/api/orgs", orgRoutes);
     app.use("/api/events", eventRoutes);
 
+    // Health check route
+    app.get("/api/health", (req, res) => {
+      res.json({ status: "ok", message: "API is running!" });
+    });
+
     // 3️⃣ Global error handling middleware
     app.use(notFound);
     app.use(errorHandler);

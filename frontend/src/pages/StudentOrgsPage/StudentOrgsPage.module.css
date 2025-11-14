@@ -27,7 +27,7 @@
   .title{
     font-size: clamp(36px, 6vw, 64px);
     line-height:1.02;
-    margin:0 0 22px;
+    /*margin: 0 310px 22px 310px;*/
     font-weight: 900;
     text-align:center;
     color:#0b0b0b;
@@ -75,8 +75,8 @@
     border:0;
     border-radius:999px;
     padding:10px 16px;
-    background:#ddd;
-    color:#111;
+    background:var(--panel);;
+    color:var(--text);
     font-weight:800;
     cursor:pointer;
   }
