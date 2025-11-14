@@ -30,7 +30,7 @@ export default function Sidebar() {
 
   const items: Item[] = [
     { label: "Home", href: "/", icon: <img src={homeIcon} alt="Home" /> },
-    { label: "My Dashboard", href: "/orgs", icon: <img src={profileIcon} alt="Dashboard" /> },
+    { label: "My Dashboard", href: "/my-dashboard", icon: <img src={profileIcon} alt="Dashboard" /> },
     { label: "Calendar", href: "/calendar", icon: <img src={calendarIcon} alt="Calendar" /> },
     { label: "Events", href: "/events", icon: <img src={eventsIcon} alt="Events" /> },
     {

@@ -1,0 +1,168 @@
+/* ── CARD BASE ── */
+.card {
+  background: #e5e5e5;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+  cursor: pointer;
+  transition: all .25s ease;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  min-height: 240px;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px rgba(0,0,0,.1);
+  background: #f0f0f0;
+}
+
+.card:active {
+  transform: scale(.98);
+}
+
+/* ── EXPANDED MODAL CARD ── */
+.card.expanded {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 90vw;
+  max-width: 1000px;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 1000;
+  border-radius: 16px;
+  padding: 24px;
+  animation: modalPop 0.35s ease-out forwards;
+  min-height: auto;
+}
+
+/* backdrop blur */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(6px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* close button */
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 1001;
+}
+
+.rsvpBtn {
+  display: block;
+  margin: 1.5rem auto 0;
+  padding: 0.75rem 1.5rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.rsvpBtn:hover {
+  background-color: #0056b3;
+  transform: scale(1.03);
+}
+
+.rsvpDone {
+  background-color: #4caf50;
+}
+
+.rsvpDone:hover {
+  background-color: #388e3c;
+}
+
+.closeBtn:hover {
+  background: #fff;
+}
+
+/* ── CONTENT INSIDE EXPANDED CARD ── */
+.expandedContent {
+  margin-top: 16px;
+  width: 100%;
+}
+
+.detailLine {
+  margin: 10px 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* ── THUMB & NAME ── */
+.thumb {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #1a1a1a;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.thumb img {
+  max-width: 80%;
+  height: auto;
+  opacity: .95;
+}
+
+.name {
+  margin: 0 0 8px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: #111;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* animation */
+@keyframes modalPop {
+  from {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
