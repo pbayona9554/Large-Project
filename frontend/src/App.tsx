@@ -13,7 +13,14 @@ export default function App() {
     <AuthProvider>
       <Router>
         <Sidebar />
-        <main style={{ marginLeft: "var(--sidebar-w)", minHeight: "100vh" }}>
+        <div style={{ display: "flex", minHeight: "100vh" }}>
+          <main
+            style={{
+              marginLeft: "var(--sidebar-w)",
+              flex: 1,
+              transition: "margin-left 0.2s",
+            }}
+          >
           <Routes>
             <Route path="/" element={<StudentOrgsPage />} />
             <Route path="/orgs" element={<StudentOrgsPage />} />
@@ -22,7 +29,9 @@ export default function App() {
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/add-org" element={<AddOrgPage />} />
           </Routes>
-        </main>
+
+          </main>
+        </div>
       </Router>
     </AuthProvider>
   );

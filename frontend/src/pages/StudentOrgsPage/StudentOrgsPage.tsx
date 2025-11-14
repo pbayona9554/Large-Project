@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import LoginModal from "../../components/LoginModal/LoginModal";
+import OrgModal from "../../components/OrgModal/OrgModal";
 import OrgCard from "../OrgCard/OrgCard";
 import styles from "./StudentOrgsPage.module.css";
 import { useAuth } from "../../context/AuthContext";
@@ -17,6 +18,7 @@ export default function StudentOrgsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [categories, setCategories] = useState(["All"]);
+  const [orgModalOpen, setOrgModalOpen] = useState(false);
 
   
   console.log("Logged in user:", user); //  logs inside React component
@@ -80,7 +82,6 @@ export default function StudentOrgsPage() {
 return (
     <>
       <main className={styles.page}>
-        {!selectedOrg ? (
           <>
             <header className={styles.header}>
               <h1 className={styles.title}>
@@ -145,7 +146,10 @@ return (
                     key={org._id || org.id}
                     name={org.name}
                     logo={org.logo}
-                    onClick={() => setSelectedOrg(org)}
+                    onClick={() => {
+                      setSelectedOrg(org);
+                      setOrgModalOpen(true);
+                    }}
                   />
                 ))
               ) : (
@@ -153,22 +157,21 @@ return (
               )}
             </section>
           </>
-        ) : (
-          <div className={styles.orgDetail}>
-            <button
-              className={styles.backBtn}
-              onClick={() => setSelectedOrg(null)}
-            >
-              ← Back
-            </button>
-            <h2>{selectedOrg.name}</h2>
-            <img src={selectedOrg.logo} alt={`${selectedOrg.name} logo`} />
-            <p>{selectedOrg.description}</p>
-          </div>
-        )}
       </main>
 
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      {/* Org Modal STAYS OVERLAYED ON TOP OF THE PAGE */}
+    <OrgModal
+      isOpen={orgModalOpen}
+      onClose={() => {
+        setOrgModalOpen(false);
+        setSelectedOrg(null);
+      }}
+      orgName={selectedOrg?.name || ""}
+      description={selectedOrg?.description || ""}
+      onJoin={() => console.log("JOIN:", selectedOrg?.name)}
+    />
+
+    <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );
 }
