@@ -35,7 +35,7 @@ export default function AddEditOrgPage() {
     console.log("Saving organization:", orgData);
 
     try {
-      const response = await fetch("http://178.128.188.181:5000/api/orgs", {
+      const response = await fetch("/api/orgs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

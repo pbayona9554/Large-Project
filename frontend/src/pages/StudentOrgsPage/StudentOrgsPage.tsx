@@ -18,15 +18,19 @@ export default function StudentOrgsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [categories, setCategories] = useState(["All"]);
+<<<<<<< HEAD
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+=======
   const [orgModalOpen, setOrgModalOpen] = useState(false);
 
+>>>>>>> 709c13f74ff185ab30d377dc3d5aa520c678a9f4
   
   console.log("Logged in user:", user); //  logs inside React component
 
   useEffect(() => {
     const fetchOrgs = async () => {
       try {
-        const res = await fetch("http://178.128.188.181:5000/api/orgs");
+        const res = await fetch(`${BASE_URL}/orgs`);
         if (!res.ok) throw new Error("Failed to fetch organizations");
 
         const data = await res.json();
@@ -54,9 +58,7 @@ export default function StudentOrgsPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(
-          "http://178.128.188.181:5000/api/orgs/categories"
-        );
+        const res = await fetch(`${BASE_URL}/orgs/categories`);
         if (!res.ok) throw new Error("Failed to fetch categories");
 
         const data = await res.json();

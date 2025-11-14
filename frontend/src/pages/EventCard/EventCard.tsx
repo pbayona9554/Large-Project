@@ -60,10 +60,9 @@ export default function EventCard({ event }: EventCardProps) {
     try {
         setLoading(true);
 
-        const BACKEND_URL = "http://178.128.188.181:5000"; // replace with your backend
         const endpoint = rsvpStatus
-        ? `${BACKEND_URL}/api/events/${encodeURIComponent(event.name)}/cancel-rsvp`
-        : `${BACKEND_URL}/api/events/${encodeURIComponent(event.name)}/rsvp`;
+          ? `/api/events/${encodeURIComponent(event.name)}/cancel-rsvp`
+          : `/api/events/${encodeURIComponent(event.name)}/rsvp`;
 
         const res = await fetch(endpoint, {
         method: "POST",

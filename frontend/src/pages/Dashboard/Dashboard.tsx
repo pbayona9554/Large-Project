@@ -35,14 +35,16 @@ useEffect(() => {
 
     setLoading(true);
     try {
+      const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
       // Fetch current user
-      const userRes = await fetch("http://178.128.188.181:5000/api/auth/me", {
+      const userRes = await fetch(`${BASE_URL}/auth/me`, {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log("auth/me response status:", userRes.status);
 
-      const userData = await userRes.json(); // parse JSON once
+      const userData = await userRes.json();
       console.log("auth/me response data:", userData);
 
       if (!userRes.ok) throw new Error(userData.error || "Failed to fetch user");
@@ -50,14 +52,14 @@ useEffect(() => {
       const userOrgs = userData.user?.clubsjoined || [];
 
       // Fetch all orgs
-      const orgsRes = await fetch("http://178.128.188.181:5000/api/orgs");
+      const orgsRes = await fetch(`${BASE_URL}/orgs`);
       const allOrgs = await orgsRes.json();
       const myOrgs =
         allOrgs.orgs?.filter((org: Org) => userOrgs.includes(org.name)) || [];
       setOrgs(myOrgs);
 
       // Fetch all events
-      const eventsRes = await fetch("http://178.128.188.181:5000/api/events");
+      const eventsRes = await fetch(`${BASE_URL}/events`);
       const allEvents = await eventsRes.json();
       const myEvents =
         allEvents.events?.filter((ev: Event) =>

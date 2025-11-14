@@ -43,7 +43,8 @@ export default function CalendarPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch("http://178.128.188.181:5000/api/events");
+        const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+        const res = await fetch(`${BASE_URL}/events`);
         if (!res.ok) throw new Error("Failed to fetch events");
         const data = await res.json();
         setEvents(Array.isArray(data.events) ? data.events : []);
