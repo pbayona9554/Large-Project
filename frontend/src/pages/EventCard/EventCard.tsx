@@ -17,6 +17,7 @@ type Event = {
 
 type EventCardProps = {
   event: Event;
+  currentUserId?: string;
 };
 
 export default function EventCard({ event }: EventCardProps) {

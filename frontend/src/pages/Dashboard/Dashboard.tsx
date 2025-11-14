@@ -3,6 +3,7 @@ import LoginModal from "../../components/LoginModal/LoginModal";
 import OrgCard from "../OrgCard/OrgCard";
 import styles from "./Dashboard.module.css";
 import { useAuth } from "../../context/AuthContext";
+import EventCard from "../EventCard/EventCard";
 
 interface Org {
   _id: string;
@@ -113,7 +114,7 @@ useEffect(() => {
                 <p>Loading events...</p>
               ) : events.length ? (
                 events.map((ev) => (
-                  <OrgCard key={ev._id} name={ev.name} logo={ev.logo} />
+                  <EventCard key={ev._id} event={ev} />
                 ))
               ) : (
                 <p>No upcoming events for your organizations.</p>
