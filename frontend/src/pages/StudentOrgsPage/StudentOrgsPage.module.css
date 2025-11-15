@@ -27,7 +27,7 @@
   .title{
     font-size: clamp(36px, 6vw, 64px);
     line-height:1.02;
-    /*margin: 0 310px 22px 310px;*/
+    margin: 0 310px 22px 310px; /*temp solution for margins*/
     font-weight: 900;
     text-align:center;
     color:#0b0b0b;
