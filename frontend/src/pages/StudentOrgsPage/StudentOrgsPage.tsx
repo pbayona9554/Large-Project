@@ -10,7 +10,7 @@ export default function StudentOrgsPage() {
   console.log("StudentOrgsPage rendered");
   const [loginOpen, setLoginOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const { user } = useAuth(); // get logged-in user
+  const { user, token } = useAuth();
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(true); // add loading state
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -20,15 +20,16 @@ export default function StudentOrgsPage() {
   const [categories, setCategories] = useState(["All"]);
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [orgModalOpen, setOrgModalOpen] = useState(false);
+  const [userOrgs, setUserOrgs] = useState<string[]>([]);
   
   console.log("Logged in user:", user); //  logs inside React component
 
   useEffect(() => {
+    if (!token) return;
     const fetchOrgs = async () => {
       try {
         const res = await fetch(`${BASE_URL}/orgs`);
         if (!res.ok) throw new Error("Failed to fetch organizations");
-
         const data = await res.json();
         console.log("Fetched orgs response:", data);
 
@@ -68,6 +69,56 @@ export default function StudentOrgsPage() {
 
     fetchCategories();
   }, []);
+
+  // Fetch user's joined orgs
+  useEffect(() => {
+    if (!token) return;
+    const fetchUserOrgs = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch user");
+        const data = await res.json();
+        setUserOrgs(data.user?.clubsjoined || []);
+      } catch (err) {
+        console.error("Error fetching user orgs:", err);
+      }
+    };
+    fetchUserOrgs();
+  }, [token]);
+
+  // Join / Leave organization
+  const handleOrgMembershipToggle = async () => {
+    if (!selectedOrg || !token) return;
+    const isMember = userOrgs.includes(selectedOrg.name);
+    const url = `${BASE_URL}/orgs/${encodeURIComponent(selectedOrg.name)}/${isMember ? "leave" : "join"}`;
+
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || `Failed to ${isMember ? "leave" : "join"} organization`);
+        return;
+      }
+
+      // Refresh user's orgs
+      const updatedRes = await fetch(`${BASE_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const updatedData = await updatedRes.json();
+      setUserOrgs(updatedData.user?.clubsjoined || []);
+
+      // Close modal
+      setOrgModalOpen(false);
+      setSelectedOrg(null);
+    } catch (err) {
+      console.error(`${isMember ? "Leave" : "Join"} org error:`, err);
+    }
+  };
 
   const filteredOrgs = orgs.filter((org) => {
     const matchesSearch =
@@ -166,7 +217,8 @@ return (
       }}
       orgName={selectedOrg?.name || ""}
       description={selectedOrg?.description || ""}
-      onJoin={() => console.log("JOIN:", selectedOrg?.name)}
+      onJoin={handleOrgMembershipToggle}
+      userOrgs={userOrgs}
     />
 
     <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
