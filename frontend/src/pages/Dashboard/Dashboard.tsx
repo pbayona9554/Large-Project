@@ -4,6 +4,7 @@ import OrgCard from "../OrgCard/OrgCard";
 import styles from "./Dashboard.module.css";
 import { useAuth } from "../../context/AuthContext";
 import EventCard from "../EventCard/EventCard";
+import OrgModal from "../../components/OrgModal/OrgModal";
 
 interface Org {
   _id: string;
@@ -24,6 +25,8 @@ export default function Dashboard() {
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOrg, setSelectedOrg] = useState(null);
+  const [orgModalOpen, setOrgModalOpen] = useState(false);
 
 useEffect(() => {
   const fetchDashboardData = async () => {
@@ -100,7 +103,15 @@ useEffect(() => {
                 <p>Loading organizations...</p>
               ) : orgs.length ? (
                 orgs.map((org) => (
-                  <OrgCard key={org._id} name={org.name} logo={org.logo} />
+                  <OrgCard
+                    key={org._id || org.id}
+                    name={org.name}
+                    logo={org.logo}
+                    onClick={() => {
+                      setSelectedOrg(org);
+                      setOrgModalOpen(true);
+                    }}
+                  />
                 ))
               ) : (
                 <p>You are not a member of any organizations yet.</p>
@@ -127,6 +138,18 @@ useEffect(() => {
       </main>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+
+      {/* Org Modal STAYS OVERLAYED ON TOP OF THE PAGE */}
+      <OrgModal
+        isOpen={orgModalOpen}
+        onClose={() => {
+          setOrgModalOpen(false);
+          setSelectedOrg(null);
+        }}
+        orgName={selectedOrg?.name || ""}
+        description={selectedOrg?.description || ""}
+        onJoin={() => console.log("JOIN:", selectedOrg?.name)}
+      />
     </>
   );
 }
