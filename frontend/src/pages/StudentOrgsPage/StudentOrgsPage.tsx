@@ -18,12 +18,8 @@ export default function StudentOrgsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [categories, setCategories] = useState(["All"]);
-<<<<<<< HEAD
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-=======
   const [orgModalOpen, setOrgModalOpen] = useState(false);
-
->>>>>>> 709c13f74ff185ab30d377dc3d5aa520c678a9f4
   
   console.log("Logged in user:", user); //  logs inside React component
 

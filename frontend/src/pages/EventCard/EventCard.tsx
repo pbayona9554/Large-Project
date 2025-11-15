@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import styles from "./EventCard.module.css";
+import { useAuth } from "../../context/AuthContext";
 
 type Event = {
   _id: string;
@@ -20,22 +21,42 @@ type EventCardProps = {
   currentUserId?: string;
 };
 
-export default function EventCard({ event }: EventCardProps) {
+export default function EventCard({ event, currentUserId }: EventCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [rsvpStatus, setRsvpStatus] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { user, token } = useAuth();
 
-  const token = localStorage.getItem("token");
+  console.log("Auth context user:", user);
+  console.log("Auth context token:", token);
+  console.log("EventCard mounted for event:", event?.name, "ID:", event?._id);
 
   useEffect(() => {
-    // Optional: if your backend includes attendees, check if user already RSVP'd
-    const userId = localStorage.getItem("userId");
-    if (userId && event.attendees?.includes(userId)) {
-      setRsvpStatus(true);
+    if (!event) {
+      console.log("no event");
+      return;
     }
-  }, [event]);
+
+    if (currentUserId == undefined) {
+      console.log("no current user id");
+      return;
+    }
+
+    console.log("Checking RSVP status for:", event.name);
+    console.log("Event attendees:", event.attendees);
+    console.log("Current user:", currentUserId);
+
+    const isUserRsvped = event.attendees?.includes(currentUserId) || false;
+    setRsvpStatus(isUserRsvped);
+
+    console.log(
+      `RSVP status for ${event.name}:`,
+      isUserRsvped ? "Already RSVPed" : "Not RSVPed"
+    );
+  }, [event, currentUserId]);
 
   const toggle = () => setExpanded((prev) => !prev);
+
   const close = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     setExpanded(false);
@@ -51,52 +72,59 @@ export default function EventCard({ event }: EventCardProps) {
         })
       : "";
 
-    const handleRSVP = async () => {
+  const handleRSVP = async () => {
     if (!token) {
-        alert("You must be logged in to RSVP.");
-        return;
+      alert("You must be logged in to RSVP.");
+      return;
     }
 
     try {
-        setLoading(true);
+      setLoading(true);
 
-        const endpoint = rsvpStatus
-          ? `/api/events/${encodeURIComponent(event.name)}/cancel-rsvp`
-          : `/api/events/${encodeURIComponent(event.name)}/rsvp`;
+      const endpoint = rsvpStatus
+        ? `/api/events/${encodeURIComponent(event.name)}/cancel-rsvp`
+        : `/api/events/${encodeURIComponent(event.name)}/rsvp`;
 
-        const res = await fetch(endpoint, {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        });
+      });
 
-        // Try parsing JSON, fallback to text
-        let data: any;
-        try {
+      let data: any;
+
+      try {
         data = await res.json();
-        } catch {
+      } catch {
         const text = await res.text();
         data = { message: text || "No response from server" };
-        }
+      }
 
-        if (!res.ok) throw new Error(data.error || data.message || "Something went wrong");
+      if (!res.ok)
+        throw new Error(data.error || data.message || "Something went wrong");
 
-        setRsvpStatus((prev) => !prev);
-        alert(data.message || (rsvpStatus ? "RSVP canceled" : "RSVP successful"));
+      const newStatus = !rsvpStatus;
+      setRsvpStatus(newStatus);
+
+      alert(
+        data.message ||
+          (newStatus ? "RSVP successful" : "RSVP canceled")
+      );
     } catch (err: any) {
-        console.error("RSVP error:", err);
-        alert(err.message || "RSVP failed. Please try again.");
+      console.error("RSVP error:", err);
+      alert(err.message || "RSVP failed. Please try again.");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-    };
+  };
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape" && expanded) close();
     };
+
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [expanded]);
@@ -104,21 +132,30 @@ export default function EventCard({ event }: EventCardProps) {
   return (
     <>
       <article
-        className={`${styles.card} ${expanded ? styles.expanded : ""}`}
+        className={`${styles.card} ${
+          expanded ? styles.expanded : ""
+        }`}
         onClick={toggle}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === "Enter" && toggle()}
       >
         {expanded && (
-          <button className={styles.closeBtn} onClick={close} aria-label="Close">
+          <button
+            className={styles.closeBtn}
+            onClick={close}
+            aria-label="Close"
+          >
             ×
           </button>
         )}
 
         <div className={styles.thumb}>
           <img
-            src={event.logo ?? "https://via.placeholder.com/300x180?text=No+Image"}
+            src={
+              event.logo ??
+              "https://via.placeholder.com/300x180?text=No+Image"
+            }
             alt={`${event.name} logo`}
           />
         </div>
@@ -127,26 +164,33 @@ export default function EventCard({ event }: EventCardProps) {
 
         {expanded && (
           <div className={styles.expandedContent}>
-            {event.description && <p className={styles.detailLine}>{event.description}</p>}
+            {event.description && (
+              <p className={styles.detailLine}>{event.description}</p>
+            )}
+
             {event.date && (
               <p className={styles.detailLine}>
                 <strong>Date:</strong> {formatDate(event.date)}
               </p>
             )}
+
             {event.location && (
               <p className={styles.detailLine}>
                 <strong>Location:</strong> {event.location}
               </p>
             )}
+
             {event.category && (
               <p className={styles.detailLine}>
                 <strong>Category:</strong> {event.category}
               </p>
             )}
 
-            {/* ✅ RSVP Toggle Button */}
+            {/* RSVP Toggle Button */}
             <button
-              className={`${styles.rsvpBtn} ${rsvpStatus ? styles.rsvpDone : ""}`}
+              className={`${styles.rsvpBtn} ${
+                rsvpStatus ? styles.rsvpDone : ""
+              }`}
               onClick={handleRSVP}
               disabled={loading}
             >

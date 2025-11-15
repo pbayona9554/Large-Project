@@ -88,6 +88,7 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
 
         setUser(
           {
+            _id: data.user.id,
             name: data.user.name,
             email: data.user.email,
             role: data.user.role,
@@ -96,6 +97,7 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
         );
 
         console.log("User set in context:", {
+          id: data.user.id,
           name: data.user.name,
           email: data.user.email,
           role: data.user.role,

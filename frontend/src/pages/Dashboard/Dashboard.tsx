@@ -116,7 +116,7 @@ useEffect(() => {
                 <p>Loading events...</p>
               ) : events.length ? (
                 events.map((ev) => (
-                  <EventCard key={ev._id} event={ev} />
+                  <EventCard key={ev._id} event={ev} currentUserId={user?._id}/>
                 ))
               ) : (
                 <p>No upcoming events for your organizations.</p>
