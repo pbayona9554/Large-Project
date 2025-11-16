@@ -154,10 +154,89 @@ const VerifyEmail = async (req, res) => {
   }
 };
 
+// ======================================
+// POST /api/auth/forgot-password
+// ======================================
+const ForgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const db = getDB();
+
+    const user = await db.collection("users").findOne({ email });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Create code & expiration
+    const resetCode = crypto.randomInt(100000, 999999).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 mins
+
+    await db.collection("users").updateOne(
+      { email },
+      { $set: { resetCode, resetCodeExpires: expiresAt } }
+    );
+
+    // Send reset email
+    try {
+      await sgMail.send({
+        to: email,
+        from: process.env.EMAIL_FROM,
+        subject: "Password Reset Code",
+        text: `Your code to reset your password is: ${resetCode}`,
+      });
+    } catch (err) {
+      console.warn("Reset email send failed:", err.message);
+    }
+
+    res.status(200).json({ message: "Reset code sent to your email" });
+
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// ======================================
+// POST /api/auth/reset-password
+// ======================================
+const ResetPassword = async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+    const db = getDB();
+
+    const user = await db.collection("users").findOne({ email });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Validate code
+    if (user.resetCode !== code)
+      return res.status(400).json({ error: "Invalid reset code" });
+
+    if (!user.resetCodeExpires || user.resetCodeExpires < Date.now())
+      return res.status(400).json({ error: "Reset code expired" });
+
+    // Hash new password
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    await db.collection("users").updateOne(
+      { email },
+      {
+        $set: { password: hashed },
+        $unset: { resetCode: "", resetCodeExpires: "" },
+      }
+    );
+
+    res.status(200).json({ message: "Password reset successful" });
+
+  } catch (err) {
+    console.error("Reset password error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 // Export all functions together
 module.exports = {
   SignUp,
   Login,
   getCurrentUser,
   VerifyEmail,
+  ForgotPassword,
+  ResetPassword,
 };
