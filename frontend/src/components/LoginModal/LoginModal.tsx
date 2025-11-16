@@ -1,3 +1,4 @@
+// LoginModal.tsx
 import { useState } from "react";
 import Modal from "../Modal/Modal";
 import styles from "./LoginModal.module.css";
@@ -13,290 +14,464 @@ type Role = "member" | "officer";
 
 export default function LoginModal({ open, onClose }: LoginModalProps) {
   const { setUser } = useAuth();
+  
+  // Main modes
   const [isSignup, setIsSignup] = useState(false);
-  const [animating, setAnimating] = useState(false);
+  const [isVerify, setIsVerify] = useState(false);
+  const [isForgotPwd, setIsForgotPwd] = useState(false);
+  const [isResetPwd, setIsResetPwd] = useState(false);
 
-  // login fields
+  // Shared
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Login
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
 
-  // signup fields
+  // Signup
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPwd, setSignupPwd] = useState("");
   const [role, setRole] = useState<Role>("member");
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Verification & Reset Code
+  const [code, setCode] = useState("");
+  const [tempEmail, setTempEmail] = useState(""); // holds email during verification/reset
+
+  // Reset Password
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Helper: Reset all forms
+  const resetAll = () => {
+    setEmail(""); setPwd("");
+    setFirstName(""); setLastName(""); setSignupEmail(""); setSignupPwd(""); setRole("member");
+    setCode(""); setNewPassword(""); setConfirmPassword("");
+    setMessage(""); setLoading(false);
+    setIsVerify(false); setIsForgotPwd(false); setIsResetPwd(false);
+  };
+
+  // === SIGNUP SUBMIT ===
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!signupEmail.endsWith("@ucf.edu")) {
+      alert("Please use your @ucf.edu email address");
+      return;
+    }
 
+    setLoading(true);
     try {
-      if (isSignup) {
-        if (!signupEmail.endsWith("@ucf.edu")) {
-          alert("Please use your @ucf.edu email address");
-          return;
-        }
+      const payload = {
+        name: `${firstName} ${lastName}`.trim(),
+        email: signupEmail,
+        password: signupPwd,
+        role: role === "officer" ? "admin" : "student",
+      };
 
-        const payload = {
-          name: `${firstName} ${lastName}`,
-          email: signupEmail,
-          password: signupPwd,
-          role: role === "officer" ? "admin" : "student",
-        };
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-        console.log("Sending signup payload:", payload);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Signup failed");
 
-        const res = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+      setTempEmail(signupEmail);
+      setIsVerify(true);
+      setMessage("Check your email for the 6-digit code!");
+    } catch (err: any) {
+      alert(err.message || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        const data = await res.json();
-        console.log("Signup response:", data);
+  // === VERIFY CODE ===
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/auth/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: tempEmail, code }),
+      });
 
-        if (!res.ok) {
-          alert(`Signup failed: ${data.message || "Unknown error"}`);
-          return;
-        }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Invalid code");
 
-        alert("Signup successful!");
-        setIsSignup(false);
-        setFirstName("");
-        setLastName("");
-        setSignupEmail("");
-        setSignupPwd("");
-        setRole("member");
-      } else {
-        const payload = { email: email, password: pwd };
+      alert("Email verified! You can now log in.");
+      setIsSignup(false);
+      resetAll();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        console.log("Sending login payload:", payload);
+  // === RESEND CODE ===
+  const handleResendCode = async () => {
+    setLoading(true);
+    try {
+      const payload = {
+        name: `${firstName} ${lastName}`.trim(),
+        email: tempEmail || signupEmail,
+        password: signupPwd,
+      };
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed to resend");
+      setMessage("New code sent!");
+    } catch {
+      alert("Failed to resend code");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+  // === FORGOT PASSWORD - SEND RESET CODE ===
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return alert("Enter your email first");
 
-        const data = await res.json();
-        console.log("Login response:", data);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
-        if (!res.ok) {
-          alert(`Login failed: ${data.message || "Unknown error"}`);
-          return;
-        }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
 
-        setUser(
-          {
-            _id: data.user.id,
-            name: data.user.name,
-            email: data.user.email,
-            role: data.user.role,
-          },
-          data.token // pass token to context
-        );
+      setTempEmail(email);
+      setIsForgotPwd(false);
+      setIsResetPwd(true);
+      setMessage("Check your email for the reset code");
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        console.log("User set in context:", {
-          id: data.user.id,
+  // === SUBMIT NEW PASSWORD ===
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) return alert("Passwords don't match");
+    if (newPassword.length < 6) return alert("Password too short");
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: tempEmail, code, newPassword }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+
+      alert("Password reset successful! You can now log in.");
+      resetAll();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // === LOGIN SUBMIT ===
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pwd }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Login failed");
+
+      setUser(
+        {
           name: data.user.name,
           email: data.user.email,
           role: data.user.role,
-        });
-        console.log("Token in context:", data.token);
-        console.log("Token in localStorage:", localStorage.getItem("token"));
-        console.log("User in localStorage:", localStorage.getItem("user"));
+        },
+        data.token
+      );
 
-        alert("Login successful!");
-        onClose();
-      }
-    } catch (err) {
-      console.error("Error during auth:", err);
-      alert("Something went wrong. Please try again.");
+      onClose();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
     }
-  }
-
-  function toggleMode() {
-    setIsSignup(!isSignup);
-    setEmail("");
-    setPwd("");
-    setFirstName("");
-    setLastName("");
-    setSignupEmail("");
-    setSignupPwd("");
-    setRole("member");
-  }
+  };
 
   return (
     <Modal isOpen={open} onClose={onClose} labelledBy="authTitle">
       <div className={styles.card}>
         <div className={styles.inner}>
-          <h1 id="authTitle" className={styles.title}>
-            {isSignup ? "Sign Up" : "Login"}
-          </h1>
 
-          <form onSubmit={handleSubmit}>
-            {isSignup ? (
-              <>
-                <div className={styles.fieldRow}>
-                  <div className={styles.field}>
-                    <label className={styles.srOnly} htmlFor="firstName">
-                      First Name
-                    </label>
-                    <input
-                      id="firstName"
-                      className={styles.input}
-                      type="text"
-                      placeholder="First Name"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className={styles.field}>
-                    <label className={styles.srOnly} htmlFor="lastName">
-                      Last Name
-                    </label>
-                    <input
-                      id="lastName"
-                      className={styles.input}
-                      type="text"
-                      placeholder="Last Name"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
+          {/* ========== VERIFICATION POPUP ========== */}
+          {isVerify && (
+            <>
+              <h1 id="authTitle" className={styles.title}>Verify Email</h1>
+              <p style={{ textAlign: "center", marginBottom: "20px" }}>
+                We sent a 6-digit code to <strong>{tempEmail}</strong>
+              </p>
+              <form onSubmit={handleVerify}>
                 <div className={styles.field}>
-                  <label className={styles.srOnly} htmlFor="signupEmail">
-                    UCF Email
-                  </label>
                   <input
-                    id="signupEmail"
                     className={styles.input}
-                    type="email"
-                    placeholder="UCF Email"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
+                    type="text"
+                    maxLength={6}
+                    placeholder="000000"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                     required
+                    autoFocus
+                    style={{ letterSpacing: "8px", fontSize: "24px", textAlign: "center" }}
                   />
                 </div>
 
-                <div className={styles.field}>
-                  <label className={styles.srOnly} htmlFor="signupPwd">
-                    Password
-                  </label>
-                  <input
-                    id="signupPwd"
-                    className={styles.input}
-                    type="password"
-                    placeholder="Password"
-                    autoComplete="new-password"
-                    value={signupPwd}
-                    onChange={(e) => setSignupPwd(e.target.value)}
-                    required
-                  />
+                {message && <p style={{ textAlign: "center", color: "#0a0a0a" }}>{message}</p>}
+
+                <div className={styles.actions}>
+                  <button className={styles.btn} type="submit" disabled={loading || code.length !== 6}>
+                    Verify
+                  </button>
                 </div>
 
+                <p className={styles.meta}>
+                  Didn't get it?{" "}
+                  <button type="button" className={styles.switchBtn} onClick={handleResendCode} disabled={loading}>
+                    Resend Code
+                  </button>
+                  {" | "}
+                  <button type="button" className={styles.switchBtn} onClick={() => { setIsVerify(false); resetAll(); }}>
+                    Cancel
+                  </button>
+                </p>
+              </form>
+            </>
+          )}
+
+          {/* ========== FORGOT PASSWORD EMAIL INPUT ========== */}
+          {isForgotPwd && (
+            <>
+              <h1 id="authTitle" className={styles.title}>Reset Password</h1>
+              <form onSubmit={handleForgotPassword}>
                 <div className={styles.field}>
-                  <label className={styles.srOnly} htmlFor="role">
-                    Role
-                  </label>
-                  <select
-                    id="role"
-                    className={`${styles.input} ${styles.select}`}
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as Role)}
-                    required
-                    aria-label="Select role"
-                  >
-                    <option value="member">Member (Student)</option>
-                    <option value="officer">Officer (Administrator)</option>
-                  </select>
-                  <p className={styles.helpText}>
-                    Officers can manage org content. Members have regular access.
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className={styles.field}>
-                  <label className={styles.srOnly} htmlFor="email">
-                    UCF Email
-                  </label>
                   <input
-                    id="email"
                     className={styles.input}
                     type="email"
-                    placeholder="UCF Email"
-                    autoComplete="username"
+                    placeholder="Your UCF Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    autoFocus
                   />
                 </div>
+                <div className={styles.actions}>
+                  <button className={styles.btn} type="submit" disabled={loading}>
+                    Send Reset Code
+                  </button>
+                </div>
+                <p className={styles.meta}>
+                  <button type="button" className={styles.switchBtn} onClick={() => setIsForgotPwd(false)}>
+                    Back to Login
+                  </button>
+                </p>
+              </form>
+            </>
+          )}
 
+          {/* ========== RESET PASSWORD WITH CODE ========== */}
+          {isResetPwd && (
+            <>
+              <h1 id="authTitle" className={styles.title}>Set New Password</h1>
+              <p style={{ textAlign: "center", marginBottom: "20px" }}>
+                Enter the code sent to <strong>{tempEmail}</strong>
+              </p>
+              <form onSubmit={handleResetPassword}>
                 <div className={styles.field}>
-                  <label className={styles.srOnly} htmlFor="password">
-                    Password
-                  </label>
                   <input
-                    id="password"
+                    className={styles.input}
+                    type="text"
+                    maxLength={6}
+                    placeholder="6-digit code"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                    required
+                    autoFocus
+                  />
+                </div>
+                <div className={styles.field}>
+                  <input
                     className={styles.input}
                     type="password"
-                    placeholder="Password"
-                    autoComplete="current-password"
-                    value={pwd}
-                    onChange={(e) => setPwd(e.target.value)}
+                    placeholder="New Password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
                     required
                   />
                 </div>
-              </>
-            )}
-
-            <div className={styles.actions}>
-              <button className={styles.btn} type="submit">
-                <span>{isSignup ? "Create Account" : "Sign In"}</span>
-                {!isSignup && (
-                  <img
-                    src={keyhole}
-                    alt=""
-                    className={`${styles.loginIcon} ${
-                      animating ? styles.zoomOut : ""
-                    }`}
+                <div className={styles.field}>
+                  <input
+                    className={styles.input}
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
                   />
-                )}
-              </button>
-            </div>
+                </div>
+                <div className={styles.actions}>
+                  <button className={styles.btn} type="submit" disabled={loading}>
+                    Reset Password
+                  </button>
+                </div>
+                <p className={styles.meta}>
+                  <button type="button" className={styles.switchBtn} onClick={resetAll}>
+                    Cancel
+                  </button>
+                </p>
+              </form>
+            </>
+          )}
 
-            <p className={styles.meta}>
-              {isSignup ? (
-                <>
-                  Already have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={toggleMode}
-                    className={styles.switchBtn}
-                  >
-                    Log In
+          {/* ========== MAIN LOGIN / SIGNUP ========== */}
+          {!isVerify && !isForgotPwd && !isResetPwd && (
+            <>
+              <h1 id="authTitle" className={styles.title}>
+                {isSignup ? "Sign Up" : "Login"}
+              </h1>
+
+              <form onSubmit={isSignup ? handleSignup : handleLogin}>
+                {/* Signup Fields – First Name & Last Name stacked vertically */}
+                {isSignup && (
+                  <>
+                    <div className={styles.field}>
+                      <input
+                        className={styles.input}
+                        type="text"
+                        placeholder="First Name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.field}>
+                      <input
+                        className={styles.input}
+                        type="text"
+                        placeholder="Last Name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.field}>
+                      <input
+                        className={styles.input}
+                        type="email"
+                        placeholder="UCF Email"
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.field}>
+                      <input
+                        className={styles.input}
+                        type="password"
+                        placeholder="Password"
+                        value={signupPwd}
+                        onChange={(e) => setSignupPwd(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.field}>
+                      <select
+                        className={`${styles.input} ${styles.select}`}
+                        value={role}
+                        onChange={(e) => setRole(e.target.value as Role)}
+                      >
+                        <option value="member">Member (Student)</option>
+                        <option value="officer">Officer (Admin)</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {/* Login Fields */}
+                {!isSignup && (
+                  <>
+                    <div className={styles.field}>
+                      <input
+                        className={styles.input}
+                        type="email"
+                        placeholder="UCF Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className={styles.field}>
+                      <input
+                        className={styles.input}
+                        type="password"
+                        placeholder="Password"
+                        value={pwd}
+                        onChange={(e) => setPwd(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className={styles.actions}>
+                  <button className={styles.btn} type="submit" disabled={loading}>
+                    <span>{isSignup ? "Create Account" : "Sign In"}</span>
+                    {!isSignup && (
+                      <img src={keyhole} alt="" className={styles.loginIcon} />
+                    )}
                   </button>
-                </>
-              ) : (
-                <>
-                  Don’t have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={toggleMode}
-                    className={styles.switchBtn}
-                  >
-                    Sign Up
-                  </button>
-                </>
-              )}
-            </p>
-          </form>
+                </div>
+
+                <p className={styles.meta}>
+                  {isSignup ? (
+                    <>Already have an account? <button type="button" className={styles.switchBtn} onClick={() => setIsSignup(false)}>Log In</button></>
+                  ) : (
+                    <>
+                      Don’t have an account? <button type="button" className={styles.switchBtn} onClick={() => setIsSignup(true)}>Sign Up</button>
+                      {" • "}
+                      <button type="button" className={styles.switchBtn} onClick={() => setIsForgotPwd(true)}>
+                        Forgot Password?
+                      </button>
+                    </>
+                  )}
+                </p>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </Modal>

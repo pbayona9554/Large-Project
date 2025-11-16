@@ -5,13 +5,14 @@
 const express = require("express");
 const router = express.Router();
 
-const { Login, SignUp, getCurrentUser } = require("../controllers/authController");
+const { Login, SignUp, getCurrentUser, VerifyEmail } = require("../controllers/authController");
 const {protect} = require("../middleware/authMiddleware");
 
 // base route: /api/auth
 router.post("/login", Login);
 router.post("/signup", SignUp);
 router.get("/me", protect, getCurrentUser);
+router.post("/verify", VerifyEmail);
 
 module.exports = router;
 
