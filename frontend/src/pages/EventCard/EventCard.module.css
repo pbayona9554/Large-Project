@@ -1,4 +1,4 @@
-/* ── CARD BASE ── */
+/* frontend/src/pages/EventCard/EventCard.module.css */
 .card {
   background: #e5e5e5;
   border-radius: 10px;
@@ -28,7 +28,6 @@
   transform: scale(.98);
 }
 
-/* ── EXPANDED MODAL CARD ── */
 .card.expanded {
   position: fixed;
   top: 50%;
@@ -45,7 +44,6 @@
   min-height: auto;
 }
 
-/* backdrop blur */
 .backdrop {
   position: fixed;
   inset: 0;
@@ -62,7 +60,6 @@
   pointer-events: auto;
 }
 
-/* close button */
 .closeBtn {
   position: absolute;
   top: 12px;
@@ -82,38 +79,10 @@
   z-index: 1001;
 }
 
-.rsvpBtn {
-  display: block;
-  margin: 1.5rem auto 0;
-  padding: 0.75rem 1.5rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.rsvpBtn:hover {
-  background-color: #0056b3;
-  transform: scale(1.03);
-}
-
-.rsvpDone {
-  background-color: #4caf50;
-}
-
-.rsvpDone:hover {
-  background-color: #388e3c;
-}
-
 .closeBtn:hover {
   background: #fff;
 }
 
-/* ── CONTENT INSIDE EXPANDED CARD ── */
 .expandedContent {
   margin-top: 16px;
   width: 100%;
@@ -125,7 +94,6 @@
   line-height: 1.5;
 }
 
-/* ── THUMB & NAME ── */
 .thumb {
   width: 100%;
   aspect-ratio: 16/9;
@@ -155,7 +123,6 @@
   justify-content: center;
 }
 
-/* animation */
 @keyframes modalPop {
   from {
     transform: translate(-50%, -50%) scale(0.9);
@@ -165,4 +132,46 @@
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
+}
+
+.editBtn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #f7c546;
+  color: #111;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+  z-index: 1001;
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+}
+
+.editBtn:hover {
+  background: #e6b53d;
+}
+
+/* NEW: RSVP Button - Bottom Right */
+.rsvpBtn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: #f7c546;
+  color: #111;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 1001;
+  box-shadow: 0 4px 12px rgba(247, 197, 70, 0.3);
+}
+
+.rsvpBtn:hover {
+  background: #e6b53d;
+  transform: translateY(-2px);
 }

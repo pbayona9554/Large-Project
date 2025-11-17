@@ -15,11 +15,12 @@
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
+  position: relative;
 }
 
 .header {
   width: 100%;
-  max-width:1400px;
+  max-width: 1400px;
   margin-bottom: 28px;
   padding: 0 2vw;
   box-sizing: border-box;
@@ -36,8 +37,7 @@
   flex-direction: column;
 }
 
-/* search row (replaces the old statsRow) */
-.searchRow {
+.statsRow {
   display: grid;
   gap: 12px;
   align-items: center;
@@ -45,8 +45,7 @@
   box-sizing: border-box;
 }
 
-/* search box (same as StudentOrgs)*/
-.searchBox {
+.searchBar {
   flex: 1;
   min-width: 250px;
   padding: 10px 14px;
@@ -60,33 +59,11 @@
   transition: all 0.2s ease;
 }
 
-/* Magnifying glass */
-.searchIcon {
-  width: 20px;
-  height: 20px;
-  opacity: 0.7;
-}
-
-/* Glow effect when focused */
-.searchBox:focus {
+.searchBar:focus {
   border-color: var(--gold);
   box-shadow: 0 0 0 3px rgba(247, 197, 70, 0.25);
 }
 
-/* input */
-.searchInput {
-  background: transparent;
-  border: none;
-  outline: none;
-  flex: 1;
-  font-size: 1rem;
-  color: var(--text);
-}
-.searchInput::placeholder {
-  color: var(--muted);
-}
-
-/* actions (Add/Edit button) */
 .actions {
   display: flex;
   gap: 12px;
@@ -94,7 +71,6 @@
   align-items: center;
 }
 
-/* reuse pillBtn from StudentOrgsPage */
 .pillBtn {
   appearance: none;
   border: 0;
@@ -109,15 +85,57 @@
   filter: brightness(0.98);
 }
 
-/* grid of cards */
+/* ADD EVENT BUTTON */
+.addBtn {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: #efc13d;
+  color: #111;
+  font-weight: 800;
+  cursor: pointer;
+}
+.addBtn:hover {
+  filter: brightness(0.96);
+}
+
+/* LOG IN BUTTON – 30px left of current position */
+.loginBtn {
+  position: absolute;
+  top: 70px;
+  right: calc(2vw + 33px);   /* 30px to the left of original right: 2vw */
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: #efc13d;
+  color: #111;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 0.95rem;
+  z-index: 10;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loginBtn:hover {
+  filter: brightness(0.96);
+}
+
+/* GRID */
 .grid {
   width: 100%;
   max-width: 1400px;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  justify-content: space-around;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
-  box-sizing: border-box;
   padding: 0 2vw;
+  box-sizing: border-box;
+}
+
+.grid > * {
+  height: 100%;
+  min-height: 240px;
 }

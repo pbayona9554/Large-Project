@@ -1,47 +1,181 @@
-//import { useState } from "react";
-import Modal from "../Modal/Modal";
+// frontend/src/components/OrgModal/OrgModal.tsx  (or AddOrgModal.tsx)
+import { useState, useEffect } from "react";
 import styles from "./OrgModal.module.css";
 
-type Props = {
-  isOpen: boolean;
-  onClose: () => void;
-  orgName: string;
+type Org = {
+  _id?: string;
+  name: string;
   description: string;
-  onJoin: () => void;
-  userOrgs: string[];
+  category: string;
+  logo?: string;
+  featured?: boolean;
 };
 
-export default function OrganizationPopup({
-  isOpen,
+type AddOrgModalProps = {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (formData: FormData) => void;
+  initialData?: Org | null;
+  onDelete?: () => void;
+};
+
+// YOUR EXACT CATEGORIES
+const CATEGORIES = [
+  "Academic",
+  "Community Service",
+  "Religious",
+  "Social",
+  "Sports & Recreation",
+  "Technology",
+  "Other",
+] as const;
+
+type Category = typeof CATEGORIES[number];
+
+export default function AddOrgModal({
+  open,
   onClose,
-  orgName,
-  description,
-  onJoin,
-  userOrgs, 
-}: Props) {
-  
+  onSubmit,
+  initialData,
+  onDelete,
+}: AddOrgModalProps) {
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    category: CATEGORIES[0] as Category, // defaults to "Academic"
+    logo: "",
+    featured: false,
+  });
+
+  const [preview, setPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        name: initialData.name || "",
+        description: initialData.description || "",
+        category: (initialData.category as Category) || CATEGORIES[0],
+        logo: initialData.logo || "",
+        featured: initialData.featured || false,
+      });
+      setPreview(initialData.logo || null);
+    } else {
+      setForm({
+        name: "",
+        description: "",
+        category: CATEGORIES[0],
+        logo: "",
+        featured: false,
+      });
+      setPreview(null);
+    }
+  }, [initialData, open]);
+
+  if (!open) return null;
+
+  const handleImageUrl = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setForm((f) => ({ ...f, logo: url }));
+    setPreview(url);
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setForm((f) => ({ ...f, category: e.target.value as Category }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("description", form.description);
+    formData.append("category", form.category);
+    formData.append("logo", form.logo);
+    formData.append("featured", String(form.featured));
+    onSubmit(formData);
+  };
+
+  const handleDelete = () => {
+    if (confirm(`Permanently delete "${initialData?.name}"? This cannot be undone.`)) {
+      onDelete?.();
+    }
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} labelledBy="org-title">
-      <div className={styles.popup}>
-        <img src={""} alt="Organization Logo" className={styles.logo} />
+    <div className={styles.backdrop} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <button className={styles.close} onClick={onClose}>
+          ×
+        </button>
 
-        <h2 id="org-title" className={styles.title}>
-          {orgName}
-        </h2>
-        <p className={styles.description}>{description}</p>
+        <h2>{initialData ? "Edit" : "Add"} Organization</h2>
 
-        <div className={styles.buttons}>
-          <button
-            className={styles.joinBtn}
-            onClick={onJoin}
-          >
-            {userOrgs.includes(orgName) ? "Leave" : "Join"}
-          </button>
-          <button className={styles.closeBtn} onClick={onClose}>
-            Close
-          </button>
-        </div>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <input
+            required
+            placeholder="Organization Name"
+            value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+          />
+
+          <textarea
+            required
+            placeholder="Description"
+            rows={4}
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+          />
+
+          <select required value={form.category} onChange={handleCategoryChange}>
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+
+          <div className={styles.imageSection}>
+            {preview && <img src={preview} alt="Logo Preview" className={styles.preview} />}
+            <input
+              type="url"
+              placeholder="Logo URL (optional)"
+              value={form.logo}
+              onChange={handleImageUrl}
+            />
+          </div>
+
+          <label className={styles.checkbox}>
+            <input
+              type="checkbox"
+              checked={form.featured}
+              onChange={(e) => setForm((f) => ({ ...f, featured: e.target.checked }))}
+            />
+            Featured
+          </label>
+
+          {/* CENTERED BUTTONS */}
+          <div className={styles.buttonRow}>
+            <button type="submit" className={styles.submit}>
+              {initialData ? "Update Organization" : "Create Organization"}
+            </button>
+
+            {initialData && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className={styles.submit}
+                style={{
+                  background: "#d32f2f",
+                  color: "white",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#b71c1c")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#d32f2f")}
+              >
+                Delete Organization
+              </button>
+            )}
+          </div>
+        </form>
       </div>
-    </Modal>
+    </div>
   );
 }

@@ -8,7 +8,8 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:5000", // your backend when testing locally
+        //changed to 5003
+        target: "http://localhost:5003", // your backend when testing locally
         changeOrigin: true,
         secure: false,
       },

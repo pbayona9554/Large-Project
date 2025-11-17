@@ -1,96 +1,152 @@
 :root{
-    --gold:#f7c546;
-    --text:#111;
-    --muted:#6b7280;
-    --panel:#e5e5e5;
-  }
-  
-  .page{
-    min-height: 100dvh;
-    width: 100%;
-    padding:48px 2vw 80px;
-    background:#f6f6f6;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-sizing: border-box;
-  }
-  
-  .header{
-    width: 100%;
-    max-width:1400px;
-    margin-bottom: 28px;
-    padding: 0 2vw;
-    box-sizing: border-box;
-  }
-  
-  .title{
-    font-size: clamp(36px, 6vw, 64px);
-    line-height:1.02;
-    margin: 0 310px 22px 310px; /*temp solution for margins*/
-    font-weight: 900;
-    text-align:center;
-    color:#0b0b0b;
-    display:flex;
-    flex-direction:column;
-  }
+  --gold:#f7c546;
+  --text:#111;
+  --muted:#6b7280;
+  --panel:#e5e5e5;
+}
 
-  .statsRow{
-    display: grid;
-    gap: 12px;
-    align-items: center;
-    width: 100%;
-    box-sizing: border-box;
-  }
+.page{
+  min-height: 100dvh;
+  width: 100%;
+  padding:48px 2vw 80px;
+  background:#f6f6f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  position: relative; /* for top-right button */
+}
 
-  .searchBar {
-    flex: 1;
-    min-width: 250px;
-    padding: 10px 14px;
-    border-radius: 999px;
-    border: 2px solid #ccc;
-    background: var(--panel);
-    font-size: 16px;
-    color: var(--text);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    outline: none;
-    transition: all 0.2s ease;
-  }
+.header{
+  width: 100%;
+  max-width:1400px;
+  margin-bottom: 28px;
+  padding: 0 2vw;
+  box-sizing: border-box;
+}
 
-  /* Glow effect when focused */
-  .searchBar:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(247, 197, 70, 0.25);
-  }
+.title{
+  font-size: clamp(36px, 6vw, 64px);
+  line-height:1.02;
+  margin:0 0 22px;
+  font-weight: 900;
+  text-align:center;
+  color:#0b0b0b;
+  display:flex;
+  flex-direction:column;
+}
 
-  .actions{
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    align-items: center;
-  }
-  
-  .pillBtn{
-    appearance:none;
-    border:0;
-    border-radius:999px;
-    padding:10px 16px;
-    background:var(--panel);;
-    color:var(--text);
-    font-weight:800;
-    cursor:pointer;
-  }
-  
-  .pillBtn:hover{ filter:brightness(0.98); }
-  
-  .grid{
-    width: 100%;
-    max-width: 1400px;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    justify-content: space-around;
-    gap: 24px;
-    box-sizing: border-box;
-    padding: 0 2vw;
-  }
+.statsRow{
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.searchBar {
+  flex: 1;
+  min-width: 250px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 2px solid #ccc;
+  background: var(--panel);
+  font-size: 16px;
+  color: var(--text);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+/* Glow effect when focused */
+.searchBar:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(247, 197, 70, 0.25);
+}
+
+.actions{
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.pillBtn{
+  appearance:none;
+  border:0;
+  border-radius:999px;
+  padding:10px 16px;
+  background:#ddd;
+  color:#111;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.pillBtn:hover{ filter:brightness(0.98); }
+
+/* ── ADD ORG BUTTON ── */
+.addBtn {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: #efc13d;
+  color: #111;
+  font-weight: 800;
+  cursor: pointer;
+}
+.addBtn:hover {
+  filter: brightness(0.96);
+}
+
+/* ── LOG IN BUTTON ── */
+.loginBtn {
+  position: absolute;
+  top: 70px;
+  right: calc(2vw + 33px);
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: #efc13d;
+  color: #111;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 0.95rem;
+  z-index: 10;
+}
+.loginBtn:hover {
+  filter: brightness(0.98);
+}
+
+/* ── GRID: UNIFORM CARD LAYOUT ── */
+.grid {
+  width: 100%;
+  max-width: 1400px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 0 2vw;
+  box-sizing: border-box;
+}
+
+.grid > * {
+  height: 100%;
+  min-height: 240px;
+}
+
+/* ── BACKDROP (for OrgCard modal) ── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  backdrop-filter: blur(6px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+.backdrop.visible { 
+  opacity: 1; 
+  pointer-events: auto; 
+}

@@ -1,227 +1,223 @@
+// frontend/src/pages/StudentOrgsPage/StudentOrgsPage.tsx
 import { useEffect, useState } from "react";
 import LoginModal from "../../components/LoginModal/LoginModal";
-import OrgModal from "../../components/OrgModal/OrgModal";
 import OrgCard from "../OrgCard/OrgCard";
+import AddOrgModal from "../../components/OrgModal/OrgModal";
 import styles from "./StudentOrgsPage.module.css";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+
+type Org = {
+  _id?: string;
+  id?: string;
+  name: string;
+  description: string;
+  category: string;
+  logo: string;
+  featured: boolean;
+};
 
 export default function StudentOrgsPage() {
   console.log("StudentOrgsPage rendered");
   const [loginOpen, setLoginOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const { user, token } = useAuth();
-  const [orgs, setOrgs] = useState([]);
-  const [loading, setLoading] = useState(true); // add loading state
-  const [selectedOrg, setSelectedOrg] = useState(null);
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [orgs, setOrgs] = useState<Org[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
-  const [categories, setCategories] = useState(["All"]);
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  const [orgModalOpen, setOrgModalOpen] = useState(false);
-  const [userOrgs, setUserOrgs] = useState<string[]>([]);
-  
-  console.log("Logged in user:", user); //  logs inside React component
+  const [categories, setCategories] = useState<string[]>(["All"]);
+
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editingOrg, setEditingOrg] = useState<Org | null>(null);
+
+  // FETCH ORGS
+  const fetchOrgs = async () => {
+    try {
+      /////// HERE //////
+      const res = await fetch("/api/orgs");
+      if (!res.ok) throw new Error("Failed to fetch organizations");
+      const data = await res.json();
+
+      const list = Array.isArray(data.organizations)
+        ? data.organizations
+        : Array.isArray(data.orgs)
+        ? data.orgs
+        : [];
+
+      setOrgs(list);
+    } catch (err) {
+      console.error("Error fetching organizations:", err);
+      setOrgs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!token) return;
-    const fetchOrgs = async () => {
-      try {
-        const res = await fetch(`${BASE_URL}/orgs`);
-        if (!res.ok) throw new Error("Failed to fetch organizations");
-        const data = await res.json();
-        console.log("Fetched orgs response:", data);
-
-        // data.orgs is the array; fallback to [] if undefined
-        setOrgs(
-          Array.isArray(data.organizations)
-            ? data.organizations
-            : Array.isArray(data.orgs)
-            ? data.orgs
-            : []
-        );
-      } catch (err) {
-        console.error("Error fetching organizations:", err);
-        setOrgs([]);
-      } finally {
-        setLoading(false); // stop loading when fetch completes
-      }
-    };
-
     fetchOrgs();
   }, []);
 
+  // FETCH CATEGORIES
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/orgs/categories`);
+        /////// HERE //////
+        const res = await fetch("/api/orgs/categories");
         if (!res.ok) throw new Error("Failed to fetch categories");
-
         const data = await res.json();
-        console.log("Fetched categories:", data);
-
         setCategories(["All", ...(data.categories || [])]);
       } catch (err) {
         console.error("Error fetching categories:", err);
       }
     };
-
     fetchCategories();
   }, []);
 
-  // Fetch user's joined orgs
-  useEffect(() => {
-    if (!token) return;
-    const fetchUserOrgs = async () => {
-      try {
-        const res = await fetch(`${BASE_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Failed to fetch user");
-        const data = await res.json();
-        setUserOrgs(data.user?.clubsjoined || []);
-      } catch (err) {
-        console.error("Error fetching user orgs:", err);
-      }
-    };
-    fetchUserOrgs();
-  }, [token]);
-
-  // Join / Leave organization
-  const handleOrgMembershipToggle = async () => {
-    if (!selectedOrg || !token) return;
-    const isMember = userOrgs.includes(selectedOrg.name);
-    const url = `${BASE_URL}/orgs/${encodeURIComponent(selectedOrg.name)}/${isMember ? "leave" : "join"}`;
-
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || `Failed to ${isMember ? "leave" : "join"} organization`);
-        return;
-      }
-
-      // Refresh user's orgs
-      const updatedRes = await fetch(`${BASE_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const updatedData = await updatedRes.json();
-      setUserOrgs(updatedData.user?.clubsjoined || []);
-
-      // Close modal
-      setOrgModalOpen(false);
-      setSelectedOrg(null);
-    } catch (err) {
-      console.error(`${isMember ? "Leave" : "Join"} org error:`, err);
-    }
-  };
-
   const filteredOrgs = orgs.filter((org) => {
-    const matchesSearch =
-      org.name && org.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = org.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter =
-      activeFilter === "All" || org.category?.toLowerCase() === activeFilter.toLowerCase();
+      activeFilter === "All" ||
+      org.category.toLowerCase() === activeFilter.toLowerCase();
     return matchesSearch && matchesFilter;
   });
 
-return (
+  const handleSaveOrg = async (formData: FormData) => {
+    try {
+      const id = editingOrg?._id || editingOrg?.id;
+      const method = id ? "PUT" : "POST";
+      /////// HERE //////
+      const url = id ? `/api/orgs/${id}` : "/api/orgs";
+
+      const res = await fetch(url, { method, body: formData });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`HTTP ${res.status} – ${txt}`);
+      }
+
+      await fetchOrgs();
+      setAddModalOpen(false);
+      setEditingOrg(null);
+    } catch (err: any) {
+      console.error("Failed to save org:", err);
+      alert("Could not save. Check console.");
+    }
+  };
+
+  const handleDeleteOrg = async (orgId: string) => {
+    try {
+      /////// HERE //////
+      const res = await fetch(`/api/orgs/${orgId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete organization");
+
+      await fetchOrgs();
+      setAddModalOpen(false);
+      setEditingOrg(null);
+    } catch (err) {
+      console.error("Delete org failed:", err);
+      alert("Could not delete organization.");
+    }
+  };
+
+  const openEdit = (org: Org) => {
+    setEditingOrg(org);
+    setAddModalOpen(true);
+  };
+
+  return (
     <>
       <main className={styles.page}>
-          <>
-            <header className={styles.header}>
-              <h1 className={styles.title}>
-                <span>Student Organizations</span>
-              </h1>
+        {!user && (
+          <button className={styles.loginBtn} onClick={() => setLoginOpen(true)}>
+            Log In
+          </button>
+        )}
 
-              <div className={styles.statsRow}>
-                <input
-                  type="text"
-                  placeholder="Search organizations..."
-                  className={styles.searchBar}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+        <header className={styles.header}>
+          <h1 className={styles.title}>
+            <span>Student Organizations</span>
+          </h1>
 
-                <div className={styles.actions}>
-                  {user?.role === "admin" && (
-                    <button
-                      className={styles.pillBtn}
-                      onClick={() => navigate("/add-org")}
-                    >
-                      Add/Edit
-                    </button>
-                  )}
+          <div className={styles.statsRow}>
+            <input
+              type="text"
+              placeholder="Search organizations..."
+              className={styles.searchBar}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
 
-                  <div className={styles.menuWrap}>
-                    <button
-                      className={styles.pillBtn}
-                      onClick={() => setFilterOpen(!filterOpen)}
-                    >
-                      Filter ▾
-                    </button>
-                    {filterOpen && (
-                      <div className={styles.dropdown}>
-                        {categories.map((filter) => (
-                          <button
-                            key={filter}
-                            className={`${styles.dropdownItem} ${
-                              activeFilter === filter ? styles.active : ""
-                            }`}
-                            onClick={() => {
-                              setActiveFilter(filter);
-                              setFilterOpen(false);
-                            }}
-                          >
-                            {filter}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </header>
-
-            <section aria-label="Organizations" className={styles.grid}>
-              {loading ? (
-                <p>Loading organizations...</p>
-              ) : filteredOrgs.length > 0 ? (
-                filteredOrgs.map((org) => (
-                  <OrgCard
-                    key={org._id || org.id}
-                    name={org.name}
-                    logo={org.logo}
-                    onClick={() => {
-                      setSelectedOrg(org);
-                      setOrgModalOpen(true);
-                    }}
-                  />
-                ))
-              ) : (
-                <p>No organizations found.</p>
+            <div className={styles.actions}>
+              {user?.role === "admin" && (
+                <button
+                  className={styles.addBtn}
+                  onClick={() => {
+                    setEditingOrg(null);
+                    setAddModalOpen(true);
+                  }}
+                >
+                  Add Org
+                </button>
               )}
-            </section>
-          </>
+
+              <div className={styles.menuWrap}>
+                <button
+                  className={styles.pillBtn}
+                  onClick={() => setFilterOpen(!filterOpen)}
+                >
+                  Filter
+                </button>
+                {filterOpen && (
+                  <div className={styles.dropdown}>
+                    {categories.map((filter) => (
+                      <button
+                        key={filter}
+                        className={`${styles.dropdownItem} ${
+                          activeFilter === filter ? styles.active : ""
+                        }`}
+                        onClick={() => {
+                          setActiveFilter(filter);
+                          setFilterOpen(false);
+                        }}
+                      >
+                        {filter}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section aria-label="Organizations" className={styles.grid}>
+          {loading ? (
+            <p>Loading organizations...</p>
+          ) : filteredOrgs.length > 0 ? (
+            filteredOrgs.map((org) => (
+              <OrgCard
+                key={org._id || org.id}
+                org={org}
+                onEdit={user?.role === "admin" ? () => openEdit(org) : undefined}
+              />
+            ))
+          ) : (
+            <p>No organizations found.</p>
+          )}
+        </section>
       </main>
 
-      {/* Org Modal STAYS OVERLAYED ON TOP OF THE PAGE */}
-    <OrgModal
-      isOpen={orgModalOpen}
-      onClose={() => {
-        setOrgModalOpen(false);
-        setSelectedOrg(null);
-      }}
-      orgName={selectedOrg?.name || ""}
-      description={selectedOrg?.description || ""}
-      onJoin={handleOrgMembershipToggle}
-      userOrgs={userOrgs}
-    />
+      <AddOrgModal
+        open={addModalOpen}
+        onClose={() => {
+          setAddModalOpen(false);
+          setEditingOrg(null);
+        }}
+        onSubmit={handleSaveOrg}
+        initialData={editingOrg}
+        onDelete={editingOrg?._id ? () => handleDeleteOrg(editingOrg._id!) : undefined}
+      />
 
-    <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );
 }

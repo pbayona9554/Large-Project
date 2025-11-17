@@ -1,64 +1,71 @@
-:root{
-    --gold: #FFC904;
-    --gold-600: #FFC904;
-    --text: #111111;
-    --overlay: rgba(0,0,0,.55);
-    --radius: 18px;
-    --shadow: 0 20px 40px rgba(0,0,0,.25), 0 2px 8px rgba(0,0,0,.18);
-  }
-  
-  .root {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-  }
-  
-  .overlay {
-    position: absolute;
-    inset: 0;
-    background: var(--overlay);
-    animation: fade .18s ease forwards;
-  }
-  
-  .dialog {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding: 24px;
-    animation: pop .22s cubic-bezier(.2,.8,.2,1) forwards;
-  }
-  
-  /* Button circle */
-  .close {
-    position: absolute;
-    top: 40px;
-    right: 60px;
-    border: none;
-    background: transparent;
-    padding: 0;
-    cursor: pointer;
-    line-height: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .closeIcon {
-    width: 50px;
-    height: 50px;
-    display: block;
-    transition: opacity 0.15s ease, transform 0.15s ease;
-    filter: invert(15%) sepia(62%) saturate(6915%) hue-rotate(342deg) brightness(81%) contrast(106%);
-    }
-  
-  .close:hover .closeIcon {
-    opacity: 0.7;
-    transform: scale(1.05);
-  }
-  
-  
-  
-  @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
-  @keyframes pop { from { transform: translateY(8px) scale(.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }
-  
+/* src/components/Modal/Modal.module.css */
+
+:root {
+  --gold: #FFC904;
+  --gold-600: #FFC904;
+  --text: #111111;
+  --overlay: rgba(0,0,0,.55);
+  --radius: 18px;
+  --shadow: 0 20px 40px rgba(0,0,0,.25), 0 2px 8px rgba(0,0,0,.18);
+}
+
+/* CRITICAL FIX: Highest priority — beats EventCard (z-index 1000) */
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 3000 !important;   /* This ensures LoginModal is ALWAYS on top */
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--overlay);
+  animation: fade .18s ease forwards;
+}
+
+.dialog {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  animation: pop .22s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+/* Close button */
+.close {
+  position: absolute;
+  top: 40px;
+  right: 60px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  line-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeIcon {
+  width: 50px;
+  height: 50px;
+  display: block;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  filter: invert(15%) sepia(62%) saturate(6915%) hue-rotate(342deg) brightness(81%) contrast(106%);
+}
+
+.close:hover .closeIcon {
+  opacity: 0.7;
+  transform: scale(1.05);
+}
+
+@keyframes fade {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+@keyframes pop {
+  from { transform: translateY(8px) scale(.98); opacity: 0 }
+  to { transform: translateY(0) scale(1); opacity: 1 }
+}
