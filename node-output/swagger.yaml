@@ -1,0 +1,577 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "The API for Student Organizations App",
+    "version" : "1.0.0",
+    "title" : "Large Project Team 6",
+    "contact" : {
+      "email" : "ja240277@ucf.edu"
+    },
+    "license" : {
+      "name" : "Apache 2.0"
+    }
+  },
+  "host" : "178.128.188.181:5000",
+  "schemes" : [ "http" ],
+  "paths" : {
+    "/api/orgs/{name}" : {
+      "get" : {
+        "tags" : [ "Organizations" ],
+        "summary" : "Gets an organization by name",
+        "description" : "Returns the organization details by name",
+        "operationId" : "dlorgsName",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "description" : "Name of the organization to retrieve",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Organization details",
+            "schema" : {
+              "$ref" : "#/definitions/Organization"
+            }
+          },
+          "404" : {
+            "description" : "Organization not found"
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Organizations" ],
+        "summary" : "Lets the user delete an organization",
+        "description" : "Lets the user delete an organization",
+        "operationId" : "dldeleteOrg",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "description" : "Name of the organization to delete",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Left {name} successfully"
+          },
+          "404" : {
+            "description" : "Organization not found"
+          },
+          "500" : {
+            "description" : "Failed to delete organization"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Organizations" ],
+        "summary" : "Updates an organization",
+        "description" : "Updates an organization",
+        "operationId" : "dlupdateOrg",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "description" : "Name of the organization to update",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "organization",
+          "description" : "Organization to update",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Organization"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Organization updated successfully"
+          },
+          "400" : {
+            "description" : "Organization not found"
+          },
+          "500" : {
+            "description" : "Failed to update Organization"
+          }
+        }
+      }
+    },
+    "/api/orgs" : {
+      "post" : {
+        "tags" : [ "Organizations" ],
+        "summary" : "Creates an organization",
+        "description" : "Creates an organization",
+        "operationId" : "dlcreateOrg",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "organization",
+          "description" : "Organization to create",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Organization"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Organization created successfully"
+          },
+          "400" : {
+            "description" : "Name and category are required or Invalid category. Must be one of \"category\" or Organization name already exists"
+          },
+          "500" : {
+            "description" : "Failed to create organization"
+          }
+        }
+      }
+    },
+    "/api/orgs/{name}/leave" : {
+      "post" : {
+        "tags" : [ "Organizations" ],
+        "summary" : "Lets the user leave an organization",
+        "description" : "Lets the user leave an organization",
+        "operationId" : "dlleaveOrg",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "description" : "Name of the organization to leave",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Left {name} successfully"
+          },
+          "404" : {
+            "description" : "Organization not found"
+          },
+          "500" : {
+            "description" : "Failed to leave organization"
+          }
+        }
+      }
+    },
+    "/api/orgs/{name}/join" : {
+      "post" : {
+        "tags" : [ "Organizations" ],
+        "summary" : "Lets the user join an organization",
+        "description" : "Lets the user join an organization",
+        "operationId" : "dljoinOrg",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "description" : "Name of the organization to join",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Joined {name} successfully"
+          },
+          "404" : {
+            "description" : "Organization not found"
+          },
+          "500" : {
+            "description" : "Failed to join organization"
+          }
+        }
+      }
+    },
+    "/api/event/" : {
+      "get" : {
+        "tags" : [ "Events" ],
+        "summary" : "Gets all Events by name",
+        "description" : "Returns the event names",
+        "operationId" : "dlevents",
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "events",
+            "schema" : {
+              "$ref" : "#/definitions/Events"
+            }
+          },
+          "500" : {
+            "description" : "Failed to fetch events"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Events" ],
+        "summary" : "creates an event",
+        "description" : "Creates an event",
+        "operationId" : "dleventcreate",
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Event created successfully"
+          },
+          "500" : {
+            "description" : "Failed to create event"
+          }
+        }
+      }
+    },
+    "/api/events/{name}" : {
+      "get" : {
+        "tags" : [ "Events" ],
+        "summary" : "Gets an event by name",
+        "description" : "Returns the event details by name",
+        "operationId" : "dleventnames",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "description" : "Name of the event to retrieve",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Event details",
+            "schema" : {
+              "$ref" : "#/definitions/Events"
+            }
+          },
+          "404" : {
+            "description" : "Failed to fetch event"
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Events" ],
+        "summary" : "deletes an event",
+        "description" : "deletes an event",
+        "operationId" : "dldeleteevent",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "description" : "Name of the event to retrieve",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Event deleted succesfully"
+          },
+          "500" : {
+            "description" : "Failed to delete event"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Events" ],
+        "summary" : "Updates an event",
+        "description" : "Updates an event",
+        "operationId" : "dlupdatevent",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "description" : "Name of the event to retrieve",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Event updated succesfully",
+            "schema" : {
+              "$ref" : "#/definitions/Events"
+            }
+          },
+          "404" : {
+            "description" : "Update event error"
+          }
+        }
+      }
+    },
+    "/api/events/{name}/rsvp" : {
+      "post" : {
+        "tags" : [ "Events" ],
+        "summary" : "lets the user RSVP for an event",
+        "description" : "lets the user RSVP for an event",
+        "operationId" : "dleventrsvp",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "description" : "Name of the event to RSVP",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "RSVP'd to {name}"
+          },
+          "500" : {
+            "description" : "Failed to RSVP for event"
+          }
+        }
+      }
+    },
+    "/api/events/{name}/cancel-rsvp" : {
+      "post" : {
+        "tags" : [ "Events" ],
+        "summary" : "lets the user cancel their RSVP for an event",
+        "description" : "lets the user cancel their RSVP for an event",
+        "operationId" : "dleventcancelrsvp",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "name",
+          "in" : "path",
+          "description" : "Name of the event to cancel RSVP",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Canceled RSVP for {name}"
+          },
+          "500" : {
+            "description" : "Failed to cancel RSVP"
+          }
+        }
+      }
+    },
+    "/api/auth/signup" : {
+      "post" : {
+        "tags" : [ "Authorization" ],
+        "summary" : "lets the user sign up",
+        "description" : "lets the user sign up",
+        "operationId" : "dlsignup",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "loginItem",
+          "description" : "login",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/Authorization"
+          }
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "All fields are required"
+          },
+          "201" : {
+            "description" : "Signup successful. Please check your email for verification code."
+          },
+          "500" : {
+            "description" : "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/auth/login" : {
+      "post" : {
+        "tags" : [ "Authorization" ],
+        "summary" : "lets the user login",
+        "description" : "lets the user login",
+        "operationId" : "dllogin",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "loginItem",
+          "description" : "login",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/Authorization"
+          }
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Invalid email or password"
+          },
+          "200" : {
+            "description" : "Login succesful"
+          },
+          "500" : {
+            "description" : "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/auth/me" : {
+      "get" : {
+        "tags" : [ "Authorization" ],
+        "summary" : "returns current user",
+        "description" : "returns current user",
+        "operationId" : "dlgetCurrentUser",
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "401" : {
+            "description" : "Not authorized"
+          },
+          "200" : {
+            "description" : "Current user fetched succesfully"
+          },
+          "500" : {
+            "description" : "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/auth/verify" : {
+      "post" : {
+        "tags" : [ "Authorization" ],
+        "summary" : "verifies user",
+        "description" : "verifies user",
+        "operationId" : "dlverifyuser",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "loginItem",
+          "description" : "email",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/Authorization"
+          }
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Invalid verification code"
+          },
+          "200" : {
+            "description" : "Email verified successfully"
+          },
+          "500" : {
+            "description" : "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/auth/forgot-password" : {
+      "post" : {
+        "tags" : [ "Authorization" ],
+        "summary" : "sends user a code to their email",
+        "description" : "sends user a code to their email",
+        "operationId" : "dlforgotpass",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "loginItem",
+          "description" : "email",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/Authorization"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "User not found"
+          },
+          "200" : {
+            "description" : "Reset code sent to your email"
+          },
+          "500" : {
+            "description" : "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/auth/reset-password" : {
+      "post" : {
+        "tags" : [ "Authorization" ],
+        "summary" : "lets user reset password",
+        "description" : "lets user reset password",
+        "operationId" : "dlresetpass",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "loginItem",
+          "description" : "email",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/Authorization"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "User not found"
+          },
+          "400" : {
+            "description" : "Reset code expired"
+          },
+          "200" : {
+            "description" : "Password reset successfully"
+          },
+          "500" : {
+            "description" : "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "Organization" : {
+      "type" : "object",
+      "required" : [ "orgs" ],
+      "properties" : {
+        "orgs" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Events" : {
+      "type" : "object",
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "date" : {
+          "type" : "string",
+          "format" : "date-time"
+        },
+        "location" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Authorization" : {
+      "type" : "object",
+      "required" : [ "code", "email", "name", "password", "role" ],
+      "properties" : {
+        "email" : {
+          "type" : "string",
+          "example" : "gm@ucf.edu"
+        },
+        "password" : {
+          "type" : "string",
+          "example" : "pass"
+        },
+        "name" : {
+          "type" : "string",
+          "example" : "Ria"
+        },
+        "role" : {
+          "type" : "string",
+          "example" : "Student"
+        },
+        "code" : {
+          "type" : "integer",
+          "example" : 1234
+        },
+        "newPassword" : {
+          "type" : "string",
+          "example" : "newpass"
+        }
+      }
+    }
+  }
+}
