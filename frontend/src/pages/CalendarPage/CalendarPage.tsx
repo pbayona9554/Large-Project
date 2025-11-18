@@ -3,14 +3,16 @@ import { useState, useEffect, useMemo } from "react";
 import styles from "./CalendarPage.module.css";
 import { useAuth } from "../../context/AuthContext"; // <-- Added
 
-import { format } from "date-fns/format";
-import { startOfMonth } from "date-fns/startOfMonth";
-import { endOfMonth } from "date-fns/endOfMonth";
-import { eachDayOfInterval } from "date-fns/eachDayOfInterval";
-import { isSameMonth } from "date-fns/isSameMonth";
-import { isToday } from "date-fns/isToday";
-import { addMonths } from "date-fns/addMonths";
-import { subMonths } from "date-fns/subMonths";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isToday,
+  addMonths,
+  subMonths,
+} from "date-fns";
 
 type Event = {
   _id: string;
