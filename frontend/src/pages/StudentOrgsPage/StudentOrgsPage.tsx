@@ -5,6 +5,7 @@ import OrgCard from "../OrgCard/OrgCard";
 import AddOrgModal from "../../components/OrgModal/OrgModal";
 import styles from "./StudentOrgsPage.module.css";
 import { useAuth } from "../../context/AuthContext";
+import toast, { Toaster } from 'react-hot-toast';
 
 type Org = {
   _id?: string;
@@ -26,7 +27,6 @@ export default function StudentOrgsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [categories, setCategories] = useState<string[]>(["All"]);
-  const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingOrg, setEditingOrg] = useState<Org | null>(null);
 
@@ -107,7 +107,7 @@ export default function StudentOrgsPage() {
       });
 
       // iline notification + close modal even if backend returns 404
-      setNotification({ message: id ? "Organization updated!" : "Organization added!", type: "success" });
+      toast.success('Organization saved!');
       setAddModalOpen(false);
       setEditingOrg(null);
       await fetchOrgs();
@@ -212,12 +212,10 @@ export default function StudentOrgsPage() {
           </div>
         </header>
 
-        {/* notification */}
-        {notification && (
-          <div className={`${styles.notification} ${styles[notification.type]}`}>
-            {notification.message}
-          </div>
-        )}
+        <div>
+          <button onClick={handleSave}>Save</button>
+          <Toaster position="top-right" />
+        </div>
 
         <section aria-label="Organizations" className={styles.grid}>
           {loading ? (
