@@ -70,32 +70,37 @@ exports.createOrg = async (req, res) => {
     const db = getDB();
     const { name, description, logo, category } = req.body;
 
-    // Validate required fields
-    if (!name || !category) {
-      return res
-        .status(400)
-        .json({ error: "Name and category are required" });
+    // Required fields
+    if (!name || typeof name !== "string" || !name.trim()) {
+      return res.status(400).json({ error: "Valid organization name is required." });
     }
 
-    // Validate category
+    if (!category || typeof category !== "string") {
+      return res.status(400).json({ error: "Valid category is required." });
+    }
+
+    // Validate allowed categories
     if (!allowedCategories.includes(category)) {
-      return res
-        .status(400)
-        .json({
-          error: `Invalid category. Must be one of: ${allowedCategories.join(", ")}`
-        });
+      return res.status(400).json({
+        error: `Invalid category. Must be one of: ${allowedCategories.join(", ")}`
+      });
     }
 
-    // Check for duplicate
-    const existing = await db.collection("clubs").findOne({ name });
+    // Description validation (prevents undefined/null)
+    const safeDescription =
+      typeof description === "string" ? description.trim() : "";
+
+    // Ensure no duplicate names
+    const existing = await db.collection("clubs").findOne({ name: name.trim() });
     if (existing) {
       return res.status(400).json({ error: "Organization name already exists" });
     }
 
+    // Build safe object (no undefined fields)
     const now = new Date();
     const newOrg = {
       name: name.trim(),
-      description: description || "", // optional field
+      description: safeDescription,
       category,
       logo: logo || "/ucf-knight-placeholder.png",
       featured: false,
@@ -103,6 +108,7 @@ exports.createOrg = async (req, res) => {
       updatedAt: now,
     };
 
+    // Insert
     const result = await db.collection("clubs").insertOne(newOrg);
 
     res.status(201).json({

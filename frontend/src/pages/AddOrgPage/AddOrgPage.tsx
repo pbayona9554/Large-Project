@@ -19,27 +19,35 @@ export default function AddEditOrgPage() {
   };
 
   const handleSave = async () => {
-    // Ensure category and name are provided
-    if (!orgName || !category) {
-      alert("Please fill out the organization name and select a valid category.");
+    const nameTrimmed = orgName.trim();
+    const descriptionTrimmed = description.trim();
+    const allowedCategories = ["Tech", "Academic", "Sports", "Cultural", "Social"];
+
+    if (!nameTrimmed) {
+      alert("Organization name cannot be empty.");
+      return;
+    }
+
+    if (!allowedCategories.includes(category)) {
+      alert("Please select a valid category.");
       return;
     }
 
     const orgData = {
-      name: orgName,           // backend expects this key
-      description,
-      category,                // must be one of Tech, Academic, Sports, Cultural, Social
-      logo: image,             // optional
+      name: nameTrimmed,
+      description: descriptionTrimmed,
+      category,
+      logo: image,
     };
 
-    console.log("Saving organization:", orgData);
+    console.log("Sending org data:", orgData);
 
     try {
       const response = await fetch("/api/orgs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // <-- must be valid token
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(orgData),
       });

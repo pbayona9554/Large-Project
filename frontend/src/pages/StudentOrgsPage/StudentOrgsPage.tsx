@@ -20,7 +20,7 @@ export default function StudentOrgsPage() {
   console.log("StudentOrgsPage rendered");
   const [loginOpen, setLoginOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -81,14 +81,26 @@ export default function StudentOrgsPage() {
     return matchesSearch && matchesFilter;
   });
 
-  const handleSaveOrg = async (formData: FormData) => {
+  const handleSaveOrg = async (orgData: any) => {
     try {
+      if (!token) {
+        alert("You must be logged in to create or edit an organization.");
+        return;
+      }
+
       const id = editingOrg?._id || editingOrg?.id;
       const method = id ? "PUT" : "POST";
-      /////// HERE //////
       const url = id ? `/api/orgs/${id}` : "/api/orgs";
 
-      const res = await fetch(url, { method, body: formData });
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(orgData),
+      });
+
       if (!res.ok) {
         const txt = await res.text();
         throw new Error(`HTTP ${res.status} – ${txt}`);

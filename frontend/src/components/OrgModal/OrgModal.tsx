@@ -85,13 +85,16 @@ export default function AddOrgModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("name", form.name);
-    formData.append("description", form.description);
-    formData.append("category", form.category);
-    formData.append("logo", form.logo);
-    formData.append("featured", String(form.featured));
-    onSubmit(formData);
+
+    const orgData = {
+      name: form.name.trim(),
+      description: form.description.trim(),
+      category: form.category,
+      logo: form.logo,
+      featured: form.featured,
+    };
+
+    onSubmit(orgData);
   };
 
   const handleDelete = () => {
