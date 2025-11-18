@@ -30,6 +30,8 @@ export default function StudentOrgsPage() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingOrg, setEditingOrg] = useState<Org | null>(null);
 
+  console.log("Token:", token);
+
   // FETCH ORGS
   const fetchOrgs = async () => {
     try {
@@ -90,7 +92,10 @@ export default function StudentOrgsPage() {
 
       const id = editingOrg?._id || editingOrg?.id;
       const method = id ? "PUT" : "POST";
-      const url = id ? `/api/orgs/${id}` : "/api/orgs";
+      // Use the new route for PUT by ID
+      const url = id ? `/api/orgs/id/${id}` : "/api/orgs";
+
+      console.log(`${method}ing org:`, id, orgData);
 
       const res = await fetch(url, {
         method,

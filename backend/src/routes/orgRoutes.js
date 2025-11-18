@@ -7,9 +7,11 @@ const {
   getOrgByName,
   createOrg,
   updateOrgByName,
+  updateOrgById,   // <-- add this
   deleteOrgByName,
   joinOrg,
   leaveOrg,
+  getCategories
 } = require("../controllers/orgController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -35,10 +37,11 @@ router.get("/:name", getOrgByName);
 router.post("/", protect, officerOnly, createOrg);
 router.patch("/:name", protect, officerOnly, updateOrgByName);
 router.delete("/:name", protect, officerOnly, deleteOrgByName);
+router.put("/id/:id", protect, officerOnly, updateOrgById);
 
 // Member
 router.post("/:name/join", protect, joinOrg);
 router.post("/:name/leave", protect, leaveOrg);
-
+router.get("/categories", getCategories);
 
 module.exports = router;

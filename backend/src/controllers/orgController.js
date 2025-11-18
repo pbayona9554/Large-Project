@@ -217,3 +217,30 @@ exports.leaveOrg = async (req, res) => {
     res.status(500).json({ error: "Failed to leave organization" });
   }
 };
+
+exports.updateOrgById = async (req, res) => {
+  try {
+    const db = getDB();
+    const { id } = req.params;
+    const updates = { ...req.body, updatedAt: new Date() };
+
+    const result = await db.collection("clubs").findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: updates },
+      { returnDocument: "after" }
+    );
+
+    if (!result.value)
+      return res.status(404).json({ error: "Organization not found" });
+
+    res.status(200).json({
+      message: "Organization updated successfully",
+      organization: result.value,
+    });
+  } catch (err) {
+    console.error("Update org by ID error:", err);
+    res.status(500).json({ error: "Failed to update organization" });
+  }
+};
+
+exports.getCategories = (req, res) => res.json({ categories: allowedCategories });
