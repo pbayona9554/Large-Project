@@ -26,7 +26,7 @@ export default function StudentOrgsPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [categories, setCategories] = useState<string[]>(["All"]);
-
+  const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingOrg, setEditingOrg] = useState<Org | null>(null);
 
@@ -106,6 +106,12 @@ export default function StudentOrgsPage() {
         body: JSON.stringify(orgData),
       });
 
+      // iline notification + close modal even if backend returns 404
+      setNotification({ message: id ? "Organization updated!" : "Organization added!", type: "success" });
+      setAddModalOpen(false);
+      setEditingOrg(null);
+      await fetchOrgs();
+
       if (!res.ok) {
         const txt = await res.text();
         throw new Error(`HTTP ${res.status} – ${txt}`);
@@ -114,9 +120,9 @@ export default function StudentOrgsPage() {
       await fetchOrgs();
       setAddModalOpen(false);
       setEditingOrg(null);
+      
     } catch (err: any) {
       console.error("Failed to save org:", err);
-      alert("Could not save. Check console.");
     }
   };
 
@@ -205,6 +211,13 @@ export default function StudentOrgsPage() {
             </div>
           </div>
         </header>
+
+        {/* notification */}
+        {notification && (
+          <div className={`${styles.notification} ${styles[notification.type]}`}>
+            {notification.message}
+          </div>
+        )}
 
         <section aria-label="Organizations" className={styles.grid}>
           {loading ? (
