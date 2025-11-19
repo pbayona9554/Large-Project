@@ -138,8 +138,7 @@ exports.updateOrgByName = async (req, res) => {
         { returnDocument: "after" }
       );
 
-    if (!result.value)
-      return res.status(404).json({ error: "Organization not found" });
+    
 
     res.status(200).json({
       message: "Organization updated successfully",

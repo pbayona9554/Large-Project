@@ -120,8 +120,6 @@ exports.updateEventById = async (req, res) => {
       { returnDocument: "after" }
     );
 
-    if (!result.value) return res.status(404).json({ error: "Event not found" });
-
     res.status(200).json({
       message: "Event updated successfully",
       event: result.value,
