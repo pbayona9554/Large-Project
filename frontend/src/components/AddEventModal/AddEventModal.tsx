@@ -16,7 +16,7 @@ type Event = {
 type AddEventModalProps = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (formData: FormData) => void;
+  onSubmit: (eventData: any) => void;  // ← Now accepts plain object
   initialData?: Event | null;
   onDelete?: () => void;
 };
@@ -55,11 +55,12 @@ export default function AddEventModal({
 
   useEffect(() => {
     if (initialData) {
+      const eventDate = initialData.date ? new Date(initialData.date) : null;
       setForm({
         name: initialData.name || "",
         description: initialData.description || "",
-        date: initialData.date ? initialData.date.split("T")[0] : "",
-        time: "",
+        date: eventDate ? eventDate.toISOString().split("T")[0] : "",
+        time: "", // You can extract time if stored separately later
         location: initialData.location || "",
         logo: initialData.logo || "",
         featured: initialData.featured || false,
@@ -77,7 +78,7 @@ export default function AddEventModal({
         featured: false,
         category: CATEGORIES[0],
       });
-      setPreview(null);
+      setPreview(null);
     }
   }, [initialData, open]);
 
@@ -93,18 +94,23 @@ export default function AddEventModal({
     setForm((f) => ({ ...f, category: e.target.value as Category }));
   };
 
+  // FIXED: Send clean JSON object instead of FormData
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("name", form.name);
-    formData.append("description", form.description);
-    formData.append("date", form.date);
-    if (form.time) formData.append("time", form.time);
-    formData.append("location", form.location);
-    formData.append("logo", form.logo);
-    formData.append("category", form.category);
-    formData.append("featured", String(form.featured));
-    onSubmit(formData);
+
+    const eventData = {
+      name: form.name.trim(),
+      description: form.description.trim() || undefined,
+      date: form.date,
+      time: form.time || undefined,
+      location: form.location.trim(),
+      category: form.category,
+      logo: form.logo || undefined,
+      featured: form.featured,
+      organization: "University Event", // ← Change later if needed
+    };
+
+    onSubmit(eventData);
   };
 
   const handleDelete = () => {
@@ -152,11 +158,7 @@ export default function AddEventModal({
           </div>
 
           <input
-            required
-            placeholder="Location"
-            value={form.location}
-            onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-          />
+ required placeholder="Location" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} />
 
           <select required value={form.category} onChange={handleCategoryChange}>
             {CATEGORIES.map((cat) => (
@@ -185,7 +187,6 @@ export default function AddEventModal({
             Featured
           </label>
 
-          {/* CENTERED BUTTONS */}
           <div className={styles.buttonRow}>
             <button type="submit" className={styles.submit}>
               {initialData ? "Update Event" : "Create Event"}
@@ -200,8 +201,6 @@ export default function AddEventModal({
                   background: "#d32f2f",
                   color: "white",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#b71c1c")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "#d32f2f")}
               >
                 Delete Event
               </button>

@@ -4,15 +4,13 @@ import styles from "./EventCard.module.css";
 import { useAuth } from "../../context/AuthContext";
 
 type Event = {
-  _id: string;
+  _id?: string;
   name: string;
-  logo?: string;
   description?: string;
   date?: string;
   location?: string;
-  orgName?: string;
   category?: string;
-  createdAt?: string;
+  logo?: string;
   featured?: boolean;
 };
 
@@ -24,7 +22,7 @@ type EventCardProps = {
 
 export default function EventCard({ event, onEdit, onRequestLogin }: EventCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   const toggle = () => setExpanded((prev) => !prev);
   const close = (e?: React.MouseEvent) => {
@@ -55,26 +53,28 @@ export default function EventCard({ event, onEdit, onRequestLogin }: EventCardPr
       onRequestLogin?.();
       return;
     }
-
-    if (user.role === "admin") {
-      alert("Admins cannot RSVP to events.");
+    if (!token) {
+      alert("Authentication error. Please log in again.");
       return;
     }
 
     try {
-      /////// HERE //////
-      const res = await fetch(
-        `/api/events/${encodeURIComponent(event.name)}/rsvp`,
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
+      const res = await fetch(`/api/events/${event._id}/rsvp`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
 
-      if (!res.ok) throw new Error(await res.text() || "Failed to RSVP");
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "RSVP failed");
+      }
 
       alert("Successfully RSVP'd to the event!");
     } catch (err: any) {
+      console.error("RSVP error:", err);
       alert(`RSVP failed: ${err.message}`);
     }
   };
@@ -118,7 +118,9 @@ export default function EventCard({ event, onEdit, onRequestLogin }: EventCardPr
 
         {expanded && (
           <div className={styles.expandedContent}>
-            {event.description && <p className={styles.detailLine}>{event.description}</p>}
+            {event.description && (
+              <p className={styles.detailLine}>{event.description}</p>
+            )}
 
             {event.date && (
               <p className={styles.detailLine}>
@@ -135,12 +137,6 @@ export default function EventCard({ event, onEdit, onRequestLogin }: EventCardPr
             {event.category && (
               <p className={styles.detailLine}>
                 <strong>Category:</strong> {event.category}
-              </p>
-            )}
-
-            {event.orgName && (
-              <p className={styles.detailLine}>
-                <strong>Organizer:</strong> {event.orgName}
               </p>
             )}
           </div>
