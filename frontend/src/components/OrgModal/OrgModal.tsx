@@ -14,7 +14,13 @@ type Org = {
 type AddOrgModalProps = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (formData: FormData) => void;
+  onSubmit: (data: {
+    name: string;
+    description: string;
+    category: string;
+    logo?: string;
+    featured?: boolean;
+  }) => void;
   initialData?: Org | null;
   onDelete?: () => void;
 };

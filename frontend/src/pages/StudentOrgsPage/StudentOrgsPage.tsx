@@ -5,7 +5,7 @@ import OrgCard from "../OrgCard/OrgCard";
 import AddOrgModal from "../../components/OrgModal/OrgModal";
 import styles from "./StudentOrgsPage.module.css";
 import { useAuth } from "../../context/AuthContext";
-import toast, { Toaster } from 'react-hot-toast';
+//import toast, { Toaster } from 'react-hot-toast';
 
 type Org = {
   _id?: string;
@@ -107,7 +107,7 @@ export default function StudentOrgsPage() {
       });
 
       // iline notification + close modal even if backend returns 404
-      toast.success('Organization saved!');
+      //toast.success('Organization saved!');
       setAddModalOpen(false);
       setEditingOrg(null);
       await fetchOrgs();
@@ -126,20 +126,32 @@ export default function StudentOrgsPage() {
     }
   };
 
-  const handleDeleteOrg = async (orgId: string) => {
+  const handleDeleteOrg = async () => {
+    if (!editingOrg?._id) return;
+
     try {
-      /////// HERE //////
-      const res = await fetch(`/api/orgs/${orgId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete organization");
+      const response = await fetch(`/api/orgs/id/${editingOrg._id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        alert(err.error || "Failed to delete organization.");
+        return;
+      }
 
       await fetchOrgs();
-      setAddModalOpen(false);
+      setAddModalOpen(false);  // or setModalOpen(false) depending on your variable
       setEditingOrg(null);
-    } catch (err) {
-      console.error("Delete org failed:", err);
-      alert("Could not delete organization.");
+
+    } catch (error) {
+      console.error("Delete error:", error);
     }
   };
+
 
   const openEdit = (org: Org) => {
     setEditingOrg(org);
@@ -212,11 +224,6 @@ export default function StudentOrgsPage() {
           </div>
         </header>
 
-        <div>
-          <button onClick={handleSave}>Save</button>
-          <Toaster position="top-right" />
-        </div>
-
         <section aria-label="Organizations" className={styles.grid}>
           {loading ? (
             <p>Loading organizations...</p>
@@ -242,7 +249,7 @@ export default function StudentOrgsPage() {
         }}
         onSubmit={handleSaveOrg}
         initialData={editingOrg}
-        onDelete={editingOrg?._id ? () => handleDeleteOrg(editingOrg._id!) : undefined}
+        onDelete={handleDeleteOrg}
       />
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />

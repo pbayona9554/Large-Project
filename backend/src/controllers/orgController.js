@@ -152,25 +152,6 @@ exports.updateOrgByName = async (req, res) => {
 };
 
 // ==============================================
-// DELETE /api/orgs/:name
-// ==============================================
-exports.deleteOrgByName = async (req, res) => {
-  try {
-    const db = getDB();
-    const orgName = decodeURIComponent(req.params.name);
-
-    const result = await db.collection("clubs").deleteOne({ name: orgName });
-    if (!result.deletedCount)
-      return res.status(404).json({ error: "Organization not found" });
-
-    res.status(200).json({ message: "Organization deleted successfully" });
-  } catch (err) {
-    console.error("Delete org error:", err);
-    res.status(500).json({ error: "Failed to delete organization" });
-  }
-};
-
-// ==============================================
 // POST /api/orgs/:name/join
 // ==============================================
 exports.joinOrg = async (req, res) => {
@@ -244,3 +225,23 @@ exports.updateOrgById = async (req, res) => {
 };
 
 exports.getCategories = (req, res) => res.json({ categories: allowedCategories });
+
+exports.deleteOrgById = async (req, res) => {
+  try {
+    const db = getDB();
+    const { id } = req.params;
+
+    const result = await db.collection("clubs").deleteOne({
+      _id: new ObjectId(id)
+    });
+
+    if (!result.deletedCount) {
+      return res.status(404).json({ error: "Organization not found" });
+    }
+
+    res.status(200).json({ message: "Organization deleted successfully" });
+  } catch (err) {
+    console.error("Delete org by ID error:", err);
+    res.status(500).json({ error: "Failed to delete organization" });
+  }
+};
