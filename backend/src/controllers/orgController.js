@@ -150,29 +150,7 @@ exports.updateOrgByName = async (req, res) => {
   }
 };
 
-// ==============================================
-// POST /api/orgs/:name/join
-// ==============================================
-exports.joinOrg = async (req, res) => {
-  try {
-    const db = getDB();
-    const orgName = decodeURIComponent(req.params.name);
-    const userId = req.user?.id;
 
-    const org = await db.collection("clubs").findOne({ name: orgName });
-    if (!org) return res.status(404).json({ error: "Organization not found" });
-
-    await db.collection("users").updateOne(
-      { _id: new ObjectId(String(userId)) },
-      { $addToSet: { clubsjoined: orgName } }
-    );
-
-    res.status(200).json({ message: `Joined ${orgName} successfully` });
-  } catch (err) {
-    console.error("Join org error:", err);
-    res.status(500).json({ error: "Failed to join organization" });
-  }
-};
 
 // ==============================================
 // POST /api/orgs/:name/leave
@@ -242,5 +220,52 @@ exports.deleteOrgById = async (req, res) => {
   } catch (err) {
     console.error("Delete org by ID error:", err);
     res.status(500).json({ error: "Failed to delete organization" });
+  }
+};
+
+// =====================================================
+// POST /api/orgs/:id/join  ← JOIN AN ORGANIZATION
+// =====================================================
+exports.joinOrg = async (req, res) => {
+  try {
+    const db = getDB();
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    let org;
+
+    // 1. Find organization by ObjectId or by name
+    if (ObjectId.isValid(id)) {
+      org = await db.collection("clubs").findOne({ _id: new ObjectId(id) });
+    } else {
+      const name = decodeURIComponent(id);
+      org = await db.collection("clubs").findOne({ name });
+    }
+
+    if (!org) {
+      return res.status(404).json({ error: "Organization not found" });
+    }
+
+    // 2. Add user to org.members list
+    await db.collection("clubs").updateOne(
+      { _id: org._id },
+      { $addToSet: { members: new ObjectId(String(userId)) } }
+    );
+
+    // 3. Add org reference to the user's clubsjoined list
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(userId) },
+      { $addToSet: { clubsjoined: org._id } }
+    );
+
+    // 4. Respond with success
+    res.status(200).json({
+      message: `Joined ${org.name}`,
+      organization: org._id,
+    });
+
+  } catch (err) {
+    console.error("Join organization error:", err);
+    res.status(500).json({ error: "Failed to join organization" });
   }
 };

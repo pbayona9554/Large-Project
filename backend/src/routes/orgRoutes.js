@@ -40,7 +40,7 @@ router.delete("/id/:id", protect, officerOnly, deleteOrgById);
 router.put("/id/:id", protect, officerOnly, updateOrgById);
 
 // Member
-router.post("/:name/join", protect, joinOrg);
+router.post("/:id/join", protect, joinOrg);
 router.post("/:name/leave", protect, leaveOrg);
 router.get("/categories", getCategories);
 
