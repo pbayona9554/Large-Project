@@ -1,6 +1,7 @@
 // frontend/src/pages/OrgCard/OrgCard.tsx
 import { useState, useEffect } from "react";
 import styles from "./OrgCard.module.css";
+import { useAuth } from "../../context/AuthContext";
 
 type Org = {
   _id?: string;
@@ -14,16 +15,47 @@ type Org = {
 
 type OrgCardProps = {
   org: Org;
-  onEdit?: () => void; // NEW
+  onEdit?: () => void;
 };
 
 export default function OrgCard({ org, onEdit }: OrgCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const { user, token } = useAuth();
 
   const toggle = () => setExpanded((prev) => !prev);
   const close = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     setExpanded(false);
+  };
+
+  const handleJoin = async () => {
+    try {
+      if (!user) return alert("Please log in to join this organization.");
+      if (!token) return alert("Authentication error. Please log in again.");
+
+      const orgId = org._id || org.id;
+      if (!orgId) return alert("Organization ID missing.");
+
+      const res = await fetch(`/api/orgs/${orgId}/join`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "Failed to join organization");
+      }
+
+      const data = await res.json();
+      alert(data.message ?? "Joined organization!");
+    } catch (err: any) {
+      console.error("Join org error:", err);
+      alert(err.message || "Failed to join organization.");
+    }
   };
 
   useEffect(() => {
@@ -43,10 +75,6 @@ export default function OrgCard({ org, onEdit }: OrgCardProps) {
         tabIndex={0}
         onKeyDown={(e) => e.key === "Enter" && toggle()}
       >
-        {org.featured && !expanded && (
-          <span className={styles.featuredBadge}>Featured</span>
-        )}
-
         {expanded && onEdit && (
           <button
             className={styles.editBtn}
@@ -54,14 +82,17 @@ export default function OrgCard({ org, onEdit }: OrgCardProps) {
               e.stopPropagation();
               onEdit();
             }}
-            aria-label="Edit"
           >
             Edit
           </button>
         )}
 
         {expanded && (
-          <button className={styles.closeBtn} onClick={close} aria-label="Close">
+          <button
+            className={styles.closeBtn}
+            onClick={close}
+            aria-label="Close"
+          >
             ×
           </button>
         )}
@@ -78,18 +109,30 @@ export default function OrgCard({ org, onEdit }: OrgCardProps) {
         {expanded && (
           <div className={styles.expandedContent}>
             <p className={styles.detailLine}>{org.description}</p>
+
             <p className={styles.detailLine}>
               <strong>Category:</strong> {org.category}
             </p>
           </div>
         )}
+
+        {expanded && (
+          <button
+            className={styles.joinBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleJoin();
+            }}
+          >
+            Join
+  </button>
+)}
       </article>
 
       {expanded && (
         <div
           className={`${styles.backdrop} ${styles.visible}`}
           onClick={close}
-          aria-hidden="true"
         />
       )}
     </>
