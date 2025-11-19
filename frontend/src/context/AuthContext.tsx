@@ -6,7 +6,8 @@ type User = {
   name: string;
   email: string;
   role: "admin" | "student";
-
+  clubsjoined?: string[];
+  rsvps?: string[]; 
 };
 
 type AuthContextType = {

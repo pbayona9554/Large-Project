@@ -1,95 +1,255 @@
-:root{
-    --gold:#f7c546;
-    --text:#111;
-    --panel:#e5e5e5;
-  }
-  
-  .page{
-    min-height: 100dvh;
-    width: 100%;
-    padding:48px 2vw 80px;
-    background:#f6f6f6;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-sizing: border-box;
-  }
-  
-  .header{
-    width: 100%;
-    max-width:1400px;
-    margin-bottom: 28px;
-    padding: 0 2vw;
-    box-sizing: border-box;
-  }
-  
-  .title{
-    font-size: clamp(36px, 6vw, 64px);
-    line-height:1.02;
-    margin:0 0 22px;
-    font-weight: 900;
-    text-align:center;
-    color:var(--text);
-    display: flex;
-    flex-direction:column;
-  }
-  
-  .searchBar {
-    display: grid;
-    align-items: center;
-    width: 100%;
-    box-sizing: border-box;
-    flex: 1;
-    min-width: 250px;
-    padding: 10px 14px;
-    border-radius: 999px;
-    border: 2px solid #ccc;
-    background: var(--panel);
-    font-size: 16px;
-    color: var(--text);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    outline: none;
-    transition: all 0.2s ease;
-  }
+/* frontend/src/pages/Dashboard/Dashboard.module.css */
 
-  /* Glow effect when focused */
-  .searchBar:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(247, 197, 70, 0.25);
-  }
-  
-  .grid{
-    width: 100%;
-    max-width: 1400px;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    justify-content: space-around;
-    gap: 24px;
-    box-sizing: border-box;
-    padding: 0 2vw;
-  }
+:root {
+  --gold: #f7c546;
+  --text: #111;
+  --muted: #6b7280;
+  --panel: #e5e5e5;
+  --bg: #f6f6f6;
+}
 
-  .gridContainer {
+.page {
+  min-height: 100dvh;
   width: 100%;
-  max-width: 1400px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  padding: 0 2vw;
+  padding: 70px 4vw 120px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   box-sizing: border-box;
 }
 
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.header {
+  text-align: center;
+  margin-bottom: 70px;
+  max-width: 1000px;
 }
 
+.title {
+  font-size: clamp(44px, 8vw, 84px);
+  font-weight: 900;
+  line-height: 1.1;
+  margin: 0 0 16px;
+  color: var(--text);
+}
+
+.nameHighlight {
+  background: linear-gradient(120deg, var(--gold) 0%, #e6b53d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 1.4rem;
+  color: #444;
+  font-weight: 500;
+}
+
+/* Two-column layout */
+.gridContainer {
+  width: 100%;
+  max-width: 1600px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  padding: 0 3vw;
+}
+
+/* Section Title */
 .sectionTitle {
-  font-size: 22px;
+  font-size: 36px;
   font-weight: 800;
   color: var(--text);
   text-align: center;
-  margin-bottom: 8px;
+  margin: 0 0 40px;
+  padding-bottom: 14px;
+  border-bottom: 5px solid var(--gold);
+  display: inline-block;
+  align-self: center;
+}
+
+/* Perfectly Aligned Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 36px;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Force ALL cards to be same size */
+.cardWrapper {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+/* Reuse your existing card styles with fixed height */
+.card {
+  width: 100%;
+  height: 460px;            /* Fixed height */
+  background: white;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: all 0.35s ease;
+  border: 1px solid #e8e8e8;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-16px);
+  box-shadow: 0 24px 50px rgba(247, 197, 70, 0.35);
+  border-color: var(--gold);
+}
+
+.card.expanded {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) !important;
+  width: 92vw;
+  max-width: 540px;
+  height: auto;
+  min-height: 560px;
+  z-index: 1000;
+  border-radius: 32px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+}
+
+.thumb {
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.card:hover .thumb img {
+  transform: scale(1.1);
+}
+
+.name {
+  padding: 24px 28px 0;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  flex-grow: 1;
+}
+
+.expandedContent {
+  padding: 0 28px 28px;
+  animation: fadeIn 0.4s ease;
+}
+
+.detailLine {
+  margin: 16px 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+.detailLine strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Close Button */
+.closeBtn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 44px;
+  height: 44px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 26px;
+  cursor: pointer;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+}
+
+.closeBtn:hover {
+  background: var(--gold);
+  color: #111;
+}
+
+/* Backdrop */
+.backdrop {
+  display: none;
+}
+
+.backdrop.visible {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(10px);
+  z-index: 999;
+}
+
+/* Empty State & Loading */
+.emptyState {
+  text-align: center;
+  padding: 100px 20px;
+  color: var(--muted);
+  font-size: 1.4rem;
+}
+
+.ctaLink {
+  display: inline-block;
+  margin-top: 28px;
+  background: var(--gold);
+  color: #111;
+  padding: 16px 40px;
+  border-radius: 999px;
+  font-weight: 800;
+  text-decoration: none;
+  font-size: 1.1rem;
+  box-shadow: 0 8px 25px rgba(247, 197, 70, 0.4);
+  transition: all 0.3s ease;
+}
+
+.ctaLink:hover {
+  background: #e6b53d;
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(247, 197, 70, 0.5);
+}
+
+.loading {
+  text-align: center;
+  padding: 80px;
+  color: var(--muted);
+  font-size: 1.3rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1000px) {
+  .gridContainer {
+    grid-template-columns: 1fr;
+    gap: 70px;
+  }
+  .card {
+    height: 440px;
+  }
 }

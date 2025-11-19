@@ -16,6 +16,7 @@ type Org = {
 type OrgCardProps = {
   org: Org;
   onEdit?: () => void;
+  onRequestLogin?: () => void;
 };
 
 export default function OrgCard({ org, onEdit }: OrgCardProps) {

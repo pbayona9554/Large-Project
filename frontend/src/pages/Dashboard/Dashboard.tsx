@@ -1,33 +1,17 @@
+// frontend/src/pages/Dashboard/Dashboard.tsx
 import { useState, useEffect } from "react";
 import LoginModal from "../../components/LoginModal/LoginModal";
+import EventCard from "../EventCard/EventCard";
 import OrgCard from "../OrgCard/OrgCard";
 import styles from "./Dashboard.module.css";
 import { useAuth } from "../../context/AuthContext";
-import EventCard from "../EventCard/EventCard";
-import OrgModal from "../../components/OrgModal/OrgModal";
-
-interface Org {
-  _id: string;
-  name: string;
-  logo: string;
-}
-
-interface Event {
-  _id: string;
-  name: string;
-  logo: string;
-  organization?: string;
-}
 
 export default function Dashboard() {
-  const { user, token } = useAuth(); // this gives us the logged-in user + token from context
+  const { user, token } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
-  const [orgs, setOrgs] = useState<Org[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [myOrgs, setMyOrgs] = useState<any[]>([]);
+  const [myEvents, setMyEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrg, setSelectedOrg] = useState<Org | null>(null);
-  const [orgModalOpen, setOrgModalOpen] = useState(false);
-  const [userOrgs, setUserOrgs] = useState<string[]>([]);
 
   const fetchDashboardData = async () => {
     if (!token) {
@@ -38,38 +22,40 @@ export default function Dashboard() {
 
     setLoading(true);
     try {
-      const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
-      // Fetch current user
       const userRes = await fetch(`${BASE_URL}/auth/me`, {
-        method: "GET",
         headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
       });
-      console.log("auth/me response status:", userRes.status);
       const userData = await userRes.json();
-      console.log("auth/me response data:", userData);
 
-      if (!userRes.ok) throw new Error(userData.error || "Failed to fetch user");
+      const joinedOrgIds = (userData.user?.clubsjoined || []).map(String);
+      const rsvpEventIds = (userData.user?.rsvps || []).map(String);
 
-      const joinedOrgs = userData.user?.clubsjoined || [];
-      setUserOrgs(joinedOrgs);
+      // Fetch orgs
+      const orgRes = await fetch(`${BASE_URL}/orgs`);
+      const orgData = await orgRes.json();
+      const joinedOrgs = (orgData.orgs || []).filter((org: any) =>
+        joinedOrgIds.includes(org._id)
+      );
+      setMyOrgs(joinedOrgs);
 
-      // Fetch all orgs
-      const orgsRes = await fetch(`${BASE_URL}/orgs`);
-      const allOrgs = await orgsRes.json();
-      const myOrgs = allOrgs.orgs?.filter((org: Org) => joinedOrgs.includes(org.name)) || [];
-      setOrgs(myOrgs);
+      // Fetch events
+      const eventRes = await fetch(`${BASE_URL}/events`);
+      const eventData = await eventRes.json();
+      const allEvents = eventData.events || [];
 
-      // Fetch all events
-      const eventsRes = await fetch(`${BASE_URL}/events`);
-      const allEvents = await eventsRes.json();
-      const myEvents =
-        allEvents.events?.filter((ev: Event) =>
-          userOrgs.includes(ev.organization || "")
-        ) || [];
-      setEvents(myEvents);
+      const eventsToShow = allEvents.filter((event: any) => {
+        const fromMyOrg = event.organization?._id && joinedOrgIds.includes(event.organization._id);
+        const iRsvpd = rsvpEventIds.includes(event._id);
+        return fromMyOrg || iRsvpd;
+      });
+
+      setMyEvents(eventsToShow);
     } catch (err) {
-      console.error("Dashboard fetch error:", err);
+      console.error(err);
+      alert("Failed to load dashboard");
     } finally {
       setLoading(false);
     }
@@ -79,114 +65,72 @@ export default function Dashboard() {
     fetchDashboardData();
   }, [token]);
 
-    // -----------------------------
-  // Join / Leave organization
-  // -----------------------------
-  const handleOrgMembershipToggle = async () => {
-    if (!selectedOrg || !token) return;
-
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    const isMember = userOrgs.includes(selectedOrg.name);
-    const url = `${BASE_URL}/orgs/${encodeURIComponent(selectedOrg.name)}/${isMember ? "leave" : "join"}`;
-
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await res.json();
-      console.log(data);
-
-      if (!res.ok) {
-        alert(data.error || `Failed to ${isMember ? "leave" : "join"} organization`);
-        return;
-      }
-
-      // Close modal
-      setOrgModalOpen(false);
-      setSelectedOrg(null);
-
-      // Refresh dashboard
-      fetchDashboardData();
-    } catch (err) {
-      console.error(`${isMember ? "Leave" : "Join"} org error:`, err);
-    }
-  };
-
-
   return (
     <>
       <main className={styles.page}>
         <header className={styles.header}>
           <h1 className={styles.title}>
-            <span>Welcome, {user?.name || "User"}!</span>
+            <span>Welcome back,</span>
+            <span className={styles.nameHighlight}>
+              {" "}{user?.name?.split(" ")[0] || "Knight"}!
+            </span>
           </h1>
-
-          <input
-            type="text"
-            placeholder="Search for an organization or event..."
-            className={styles.searchBar}
-          />
+          <p className={styles.subtitle}>
+            Your organizations and upcoming events
+          </p>
         </header>
 
         <div className={styles.gridContainer}>
-          {/* Organizations Section */}
-          <div className={styles.section}>
+          {/* MY ORGANIZATIONS */}
+          <section>
             <h2 className={styles.sectionTitle}>My Organizations</h2>
-            <section aria-label="MyOrganizations" className={styles.grid}>
-              {loading ? (
-                <p>Loading organizations...</p>
-              ) : orgs.length ? (
-                orgs.map((org) => (
-                  <OrgCard
-                    key={org._id || org.id}
-                    name={org.name}
-                    logo={org.logo}
-                    onClick={() => {
-                      setSelectedOrg(org);
-                      setOrgModalOpen(true);
-                    }}
-                  />
-                ))
-              ) : (
-                <p>You are not a member of any organizations yet.</p>
-              )}
-            </section>
-          </div>
+            {loading ? (
+              <p className={styles.loading}>Loading your clubs...</p>
+            ) : myOrgs.length > 0 ? (
+              <div className={styles.grid}>
+                {myOrgs.map((org) => (
+                  <OrgCard key={org._id} org={org} onRequestLogin={() => setLoginOpen(true)} />
+                ))}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                <p>You haven't joined any organizations yet.</p>
+                <a href="/orgs" className={styles.ctaLink}>
+                  Explore Student Organizations
+                </a>
+              </div>
+            )}
+          </section>
 
-          {/* Events Section */}
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>My Events</h2>
-            <section aria-label="MyEvents" className={styles.grid}>
-              {loading ? (
-                <p>Loading events...</p>
-              ) : events.length ? (
-                events.map((ev) => (
-                  <EventCard key={ev._id} event={ev} currentUserId={user?._id}/>
-                ))
-              ) : (
-                <p>No upcoming events for your organizations.</p>
-              )}
-            </section>
-          </div>
+          {/* MY EVENTS */}
+          <section>
+            <h2 className={styles.sectionTitle}>Upcoming Events</h2>
+            {loading ? (
+              <p className={styles.loading}>Loading events...</p>
+            ) : myEvents.length > 0 ? (
+              <div className={styles.grid}>
+                {myEvents.map((event) => (
+                  <EventCard
+                    key={event._id}
+                    event={event}
+                    onRequestLogin={() => setLoginOpen(true)}
+                    // No onEdit, no RSVP button — clean view only
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                <p>No upcoming events from your organizations.</p>
+                <a href="/events" className={styles.ctaLink}>
+                  Browse All Events
+                </a>
+              </div>
+            )}
+          </section>
         </div>
       </main>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
-
-      {/* Org Modal STAYS OVERLAYED ON TOP OF THE PAGE */}
-      <OrgModal
-        isOpen={orgModalOpen}
-        onClose={() => {
-          setOrgModalOpen(false);
-          setSelectedOrg(null);
-        }}
-        orgName={selectedOrg?.name || ""}
-        description={selectedOrg?.description || ""}
-        onJoin={handleOrgMembershipToggle}
-        userOrgs={userOrgs}
-      />
     </>
   );
 }
